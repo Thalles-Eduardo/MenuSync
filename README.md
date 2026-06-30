@@ -6,12 +6,9 @@
 
 # 📌 Objetivo
 
-Desenvolver um sistema SaaS moderno para restaurantes, permitindo o gerenciamento de cardápio, pedidos, clientes, mesas, reservas, estoque, funcionários e financeiro.
-
-Todo o desenvolvimento será documentado e transformado em conteúdo para redes sociais.
+Desenvolver um sistema moderno para restaurantes, permitindo o gerenciamento de cardápio, pedidos, clientes, mesas, reservas, estoque, funcionários e financeiro.
 
 ---
-
 # 🛠 Stack
 
 ## Front-end
@@ -36,24 +33,12 @@ Todo o desenvolvimento será documentado e transformado em conteúdo para redes 
 
 - Docker
 - Docker Compose
-- Nginx
-- VPS
-- GitHub Actions
 
 ---
 
 # 📁 Estrutura do Projeto
 
 ```
-docs/
-├── 00-roadmap.md
-├── 01-brand.md
-├── 02-architecture.md
-├── 03-database.md
-├── 04-api.md
-├── 05-design-system.md
-├── 06-content-plan.md
-└── CHANGELOG.md
 
 src/
 ├── app/
@@ -139,12 +124,6 @@ Definir toda a arquitetura antes do desenvolvimento.
 - [ ] Definir tipografia
 - [ ] Criar logotipo
 - [ ] Configurar repositório
-- [ ] Configurar ESLint
-- [ ] Configurar Prettier
-- [ ] Configurar Husky
-- [ ] Configurar lint-staged
-- [ ] Configurar aliases
-- [ ] Configurar variáveis de ambiente
 
 ---
 
@@ -152,7 +131,7 @@ Definir toda a arquitetura antes do desenvolvimento.
 
 ## Objetivo
 
-Construir a base visual do projeto.
+Construir a base visual do projeto no Figma.
 
 ### Tarefas
 
@@ -197,7 +176,6 @@ Construir a base visual do projeto.
 - [ ] Customers
 - [ ] Categories
 - [ ] Products
-- [ ] Tables
 - [ ] Reservations
 - [ ] Orders
 - [ ] OrderItems
@@ -211,13 +189,14 @@ Construir a base visual do projeto.
 - [ ] Login
 - [ ] Cadastro
 - [ ] Recuperação de senha
+- [ ] Tokens
 - [ ] Sessão
 - [ ] Permissões
 - [ ] Middleware
 
 ---
 
-# Fase 06 — Dashboard
+# Fase 06 — Dashboard ADMIN
 
 ## Dashboard
 
@@ -334,49 +313,3 @@ Construir a base visual do projeto.
 - [ ] Acessibilidade
 
 ---
-
-# 🎥 Plano de Conteúdo
-
-Cada etapa deverá gerar conteúdo.
-
-Exemplos:
-
-- Planejamento da arquitetura
-- Organização das pastas
-- Criação do Design System
-- Modelagem do banco
-- Desenvolvimento das APIs
-- Construção do Dashboard
-- Implementação do Cardápio Digital
-- Dockerizando a aplicação
-- Deploy na VPS
-- Melhorias de performance
-- Resultado final
-
----
-
-# 🎯 MVP
-
-## Site
-
-- Landing Page
-- Cardápio Digital
-- Contato
-- Reserva
-
-## Painel Administrativo
-
-- Login
-- Dashboard
-- Produtos
-- Categorias
-- Pedidos
-- Estoque
-- Clientes
-- Funcionários
-
-## Infraestrutura
-
-- Docker
-- PostgreSQL
-- Deploy
