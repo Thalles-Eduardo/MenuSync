@@ -53,7 +53,11 @@ export default function HeroShowcase({ dishes }: { dishes: Dish[] }) {
   useGSAP(
     () => {
       if (reduce || !hasMounted.current) return;
-      gsap.fromTo(".plate-img", { scale: 0.9, rotate: -6, opacity: 0.3 }, { scale: 1, rotate: 0, opacity: 1, duration: 0.5, ease: "power2.out" });
+      gsap.fromTo(
+        ".plate-img",
+        { scale: 0.85, rotate: -8, opacity: 0, filter: "blur(14px)" },
+        { scale: 1, rotate: 0, opacity: 1, filter: "blur(0px)", duration: 0.6, ease: "power3.out" }
+      );
       gsap.fromTo(".hero-text", { x: -20, opacity: 0.4 }, { x: 0, opacity: 1, duration: 0.4, ease: "power2.out" });
     },
     { scope, dependencies: [activeDishId] }
@@ -66,6 +70,46 @@ export default function HeroShowcase({ dishes }: { dishes: Dish[] }) {
       gsap.from(".review-card", { y: 12, opacity: 0, stagger: 0.05, duration: 0.35, ease: "power2.out" });
     },
     { scope, dependencies: [activeTab] }
+  );
+
+  // Parallax + tilt 3D do prato seguindo o cursor (só em ponteiro fino / mouse)
+  useGSAP(
+    () => {
+      if (reduce) return;
+      const el = scope.current;
+      if (!el || !window.matchMedia("(pointer: fine)").matches) return;
+      const plate = el.querySelector<HTMLElement>(".plate-img");
+      if (!plate) return;
+
+      const xTo = gsap.quickTo(plate, "x", { duration: 0.7, ease: "power3" });
+      const yTo = gsap.quickTo(plate, "y", { duration: 0.7, ease: "power3" });
+      const rxTo = gsap.quickTo(plate, "rotationX", { duration: 0.7, ease: "power3" });
+      const ryTo = gsap.quickTo(plate, "rotationY", { duration: 0.7, ease: "power3" });
+
+      const onMove = (e: PointerEvent) => {
+        const r = el.getBoundingClientRect();
+        const nx = (e.clientX - r.left) / r.width - 0.5;
+        const ny = (e.clientY - r.top) / r.height - 0.5;
+        xTo(nx * 30);
+        yTo(ny * 22);
+        ryTo(nx * 12);
+        rxTo(-ny * 12);
+      };
+      const onLeave = () => {
+        xTo(0);
+        yTo(0);
+        rxTo(0);
+        ryTo(0);
+      };
+
+      el.addEventListener("pointermove", onMove);
+      el.addEventListener("pointerleave", onLeave);
+      return () => {
+        el.removeEventListener("pointermove", onMove);
+        el.removeEventListener("pointerleave", onLeave);
+      };
+    },
+    { scope, dependencies: [activeDishId] }
   );
 
   return (
