@@ -5,6 +5,7 @@ import type { Dish } from "../_data/dishes";
 import Navbar from "./Navbar";
 import HeroText from "./HeroText";
 import DishPlate from "./DishPlate";
+import DishCarousel from "./DishCarousel";
 
 type Tab = "reviews" | "ingredients";
 
@@ -38,8 +39,9 @@ export default function HeroShowcase({ dishes }: { dishes: Dish[] }) {
         </div>
       </div>
 
-      {/* Carrossel (Task 7) entra aqui */}
-      <button className="sr-only" onClick={() => handleSelect(activeDish.id)}>select</button>
+      <div className="absolute bottom-10 left-0 right-0 z-10 lg:right-[32%]">
+        <DishCarousel dishes={dishes} activeId={activeDish.id} onSelect={handleSelect} />
+      </div>
     </section>
   );
 }
