@@ -17,22 +17,44 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`relative pb-3 text-sm font-semibold transition-colors ${
+        active ? "text-white" : "text-white/50 hover:text-white/80"
+      }`}
+    >
+      {children}
+      <span
+        className={`absolute inset-x-0 -bottom-px h-0.5 origin-left rounded-full bg-salmon transition-transform duration-300 ease-out ${
+          active ? "scale-x-100" : "scale-x-0"
+        }`}
+      />
+    </button>
+  );
+}
+
 export default function ReviewsPanel({ dish, activeTab, onTabChange }: Props) {
   return (
     <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-md">
-      <div className="mb-4 flex gap-6 border-b border-white/15 pb-3">
-        <button
-          onClick={() => onTabChange("reviews")}
-          className={`text-sm font-semibold transition ${activeTab === "reviews" ? "text-white" : "text-white/50"}`}
-        >
+      <div className="mb-4 flex gap-6 border-b border-white/15">
+        <TabButton active={activeTab === "reviews"} onClick={() => onTabChange("reviews")}>
           Comentários
-        </button>
-        <button
-          onClick={() => onTabChange("ingredients")}
-          className={`text-sm font-semibold transition ${activeTab === "ingredients" ? "text-white" : "text-white/50"}`}
-        >
+        </TabButton>
+        <TabButton active={activeTab === "ingredients"} onClick={() => onTabChange("ingredients")}>
           Ingredientes
-        </button>
+        </TabButton>
       </div>
 
       {activeTab === "reviews" ? (
