@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Dish } from "../_data/dishes";
 import Navbar from "./Navbar";
 import HeroText from "./HeroText";
+import DishPlate from "./DishPlate";
 
 type Tab = "reviews" | "ingredients";
 
@@ -30,7 +31,7 @@ export default function HeroShowcase({ dishes }: { dishes: Dish[] }) {
         <HeroText dish={activeDish} />
 
         {/* Prato central (Task 6) e Painel (Task 8) entram aqui */}
-        <div />
+        <DishPlate dish={activeDish} />
         <div>
           {/* placeholder temporário do painel — remove na Task 8 */}
           <button className="sr-only" onClick={() => setActiveTab("ingredients")}>{activeTab}</button>
