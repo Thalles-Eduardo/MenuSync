@@ -6,6 +6,7 @@ import Navbar from "./Navbar";
 import HeroText from "./HeroText";
 import DishPlate from "./DishPlate";
 import DishCarousel from "./DishCarousel";
+import ReviewsPanel from "./ReviewsPanel";
 
 type Tab = "reviews" | "ingredients";
 
@@ -33,10 +34,7 @@ export default function HeroShowcase({ dishes }: { dishes: Dish[] }) {
 
         {/* Prato central (Task 6) e Painel (Task 8) entram aqui */}
         <DishPlate dish={activeDish} />
-        <div>
-          {/* placeholder temporário do painel — remove na Task 8 */}
-          <button className="sr-only" onClick={() => setActiveTab("ingredients")}>{activeTab}</button>
-        </div>
+        <ReviewsPanel dish={activeDish} activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
       <div className="absolute bottom-10 left-0 right-0 z-10 lg:right-[32%]">
