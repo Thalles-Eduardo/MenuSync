@@ -1,6 +1,12 @@
 import HeroShowcase from "./_components/HeroShowcase";
+import Loader from "./_components/Loader";
 import { dishes } from "./_data/dishes";
 
 export default function SiteHome() {
-  return <HeroShowcase dishes={dishes} />;
+  return (
+    <>
+      <Loader />
+      <HeroShowcase dishes={dishes} />
+    </>
+  );
 }
