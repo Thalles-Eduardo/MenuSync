@@ -118,12 +118,12 @@ Definir toda a arquitetura antes do desenvolvimento.
 
 ### Tarefas
 
-- [ ] Definir nome do sistema
+- [x] Definir nome do sistema
 - [ ] Criar identidade visual
-- [ ] Definir paleta de cores
-- [ ] Definir tipografia
+- [x] Definir paleta de cores
+- [x] Definir tipografia
 - [ ] Criar logotipo
-- [ ] Configurar repositório
+- [x] Configurar repositório
 
 ---
 
@@ -313,3 +313,4 @@ Construir a base visual do projeto no Figma.
 - [ ] Acessibilidade
 
 ---
+
