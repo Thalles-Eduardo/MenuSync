@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Dish } from "../_data/dishes";
 import Navbar from "./Navbar";
+import HeroText from "./HeroText";
 
 type Tab = "reviews" | "ingredients";
 
@@ -24,10 +25,20 @@ export default function HeroShowcase({ dishes }: { dishes: Dish[] }) {
       aria-label={`Prato em destaque: ${activeDish?.name}`}
     >
       <Navbar />
-      <span className="sr-only">{activeDish?.name}</span>
+
+      <div className="relative z-10 grid grid-cols-1 items-center gap-8 px-8 pt-4 pb-40 md:px-12 lg:grid-cols-[1fr_1.1fr_1fr]">
+        <HeroText dish={activeDish} />
+
+        {/* Prato central (Task 6) e Painel (Task 8) entram aqui */}
+        <div />
+        <div>
+          {/* placeholder temporário do painel — remove na Task 8 */}
+          <button className="sr-only" onClick={() => setActiveTab("ingredients")}>{activeTab}</button>
+        </div>
+      </div>
+
+      {/* Carrossel (Task 7) entra aqui */}
       <button className="sr-only" onClick={() => handleSelect(activeDish.id)}>select</button>
-      <span className="sr-only">{activeTab}</span>
-      <button className="sr-only" onClick={() => setActiveTab("ingredients")}>tab</button>
     </section>
   );
 }
