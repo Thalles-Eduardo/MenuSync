@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 import type { Dish } from "../_data/dishes";
 import Navbar from "./Navbar";
 import HeroText from "./HeroText";
@@ -21,8 +23,44 @@ export default function HeroShowcase({ dishes }: { dishes: Dish[] }) {
     setActiveTab("reviews");
   }
 
+  const scope = useRef<HTMLElement>(null);
+  const reduce = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Entrada (uma vez, no mount)
+  useGSAP(
+    () => {
+      if (reduce) return;
+      const tl = gsap.timeline({ defaults: { ease: "power3.out", duration: 0.7 } });
+      tl.from(".hero-text", { x: -40, opacity: 0 })
+        .from(".plate-img", { scale: 0.8, rotate: -8, opacity: 0 }, "-=0.4")
+        .from(".dish-thumb", { y: 30, opacity: 0, stagger: 0.08 }, "-=0.3")
+        .from(".review-card", { y: 20, opacity: 0, stagger: 0.06 }, "-=0.5");
+    },
+    { scope }
+  );
+
+  // Troca de prato
+  useGSAP(
+    () => {
+      if (reduce) return;
+      gsap.fromTo(".plate-img", { scale: 0.9, rotate: -6, opacity: 0.3 }, { scale: 1, rotate: 0, opacity: 1, duration: 0.5, ease: "power2.out" });
+      gsap.fromTo(".hero-text", { x: -20, opacity: 0.4 }, { x: 0, opacity: 1, duration: 0.4, ease: "power2.out" });
+    },
+    { scope, dependencies: [activeDishId] }
+  );
+
+  // Troca de aba (stagger nos cards)
+  useGSAP(
+    () => {
+      if (reduce) return;
+      gsap.from(".review-card", { y: 12, opacity: 0, stagger: 0.05, duration: 0.35, ease: "power2.out" });
+    },
+    { scope, dependencies: [activeTab] }
+  );
+
   return (
     <section
+      ref={scope}
       className="relative min-h-screen w-full overflow-hidden bg-cover bg-center text-white"
       style={{ backgroundImage: "url('/bgHero.webp')" }}
       aria-label={`Prato em destaque: ${activeDish?.name}`}
