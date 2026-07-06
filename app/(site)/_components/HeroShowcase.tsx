@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import type { Dish } from "../_data/dishes";
@@ -24,7 +24,17 @@ export default function HeroShowcase({ dishes }: { dishes: Dish[] }) {
   }
 
   const scope = useRef<HTMLElement>(null);
-  const reduce = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const hasMounted = useRef(false);
+  const reduce = useMemo(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    []
+  );
+
+  // Marca o fim do primeiro render (roda depois dos useGSAP/useLayoutEffect),
+  // para que as animações de troca não atropelem a animação de entrada no mount.
+  useEffect(() => {
+    hasMounted.current = true;
+  }, []);
 
   // Entrada (uma vez, no mount)
   useGSAP(
@@ -42,7 +52,7 @@ export default function HeroShowcase({ dishes }: { dishes: Dish[] }) {
   // Troca de prato
   useGSAP(
     () => {
-      if (reduce) return;
+      if (reduce || !hasMounted.current) return;
       gsap.fromTo(".plate-img", { scale: 0.9, rotate: -6, opacity: 0.3 }, { scale: 1, rotate: 0, opacity: 1, duration: 0.5, ease: "power2.out" });
       gsap.fromTo(".hero-text", { x: -20, opacity: 0.4 }, { x: 0, opacity: 1, duration: 0.4, ease: "power2.out" });
     },
@@ -52,7 +62,7 @@ export default function HeroShowcase({ dishes }: { dishes: Dish[] }) {
   // Troca de aba (stagger nos cards)
   useGSAP(
     () => {
-      if (reduce) return;
+      if (reduce || !hasMounted.current) return;
       gsap.from(".review-card", { y: 12, opacity: 0, stagger: 0.05, duration: 0.35, ease: "power2.out" });
     },
     { scope, dependencies: [activeTab] }
