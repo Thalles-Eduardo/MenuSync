@@ -71,7 +71,7 @@ export default function HeroShowcase({ dishes }: { dishes: Dish[] }) {
   return (
     <section
       ref={scope}
-      className="relative min-h-screen w-full overflow-hidden bg-cover bg-center text-white"
+      className="relative min-h-screen w-full overflow-x-hidden bg-cover bg-center text-white"
       style={{ backgroundImage: "url('/bgHero.webp')" }}
       aria-label={`Prato em destaque: ${activeDish?.name}`}
     >
@@ -85,7 +85,7 @@ export default function HeroShowcase({ dishes }: { dishes: Dish[] }) {
         <ReviewsPanel dish={activeDish} activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
-      <div className="absolute bottom-10 left-0 right-0 z-10 lg:right-[32%]">
+      <div className="static mt-8 px-8 pb-10 lg:absolute lg:bottom-10 lg:left-0 lg:right-[32%] lg:mt-0 lg:px-0 z-10">
         <DishCarousel dishes={dishes} activeId={activeDish.id} onSelect={handleSelect} />
       </div>
     </section>
