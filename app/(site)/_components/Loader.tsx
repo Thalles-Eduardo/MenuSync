@@ -22,8 +22,14 @@ export default function Loader() {
       }
 
       const tl = gsap.timeline({ onComplete: () => setDone(true) });
-      tl.to(".loader-word", { opacity: 1, duration: 1.1, ease: "power2.out" })
-        .to(".loader-sub", { opacity: 1, duration: 0.6, ease: "power2.out" }, "-=0.4")
+      // Título surge pequeno e cresce até o tamanho normal...
+      tl.fromTo(
+        ".loader-word",
+        { opacity: 0, scale: 0.55 },
+        { opacity: 1, scale: 1, duration: 1.2, ease: "power3.out" }
+      )
+        // ...e só depois de terminar, o subtítulo aparece.
+        .to(".loader-sub", { opacity: 1, duration: 0.6, ease: "power2.out" }, "+=0.15")
         .to(root.current, { opacity: 0, duration: 0.6, ease: "power2.inOut", delay: 0.5 });
     },
     { scope: root }
