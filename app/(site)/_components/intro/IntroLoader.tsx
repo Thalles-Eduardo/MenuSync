@@ -1,15 +1,31 @@
 "use client";
 
-import { useProgress } from "@react-three/drei";
+import { useEffect, useState } from "react";
 
-// Overlay de carregamento; some quando os assets terminam de carregar.
+// Cobertura de marca no início da intro: MENU SYNC com glow, fade e some.
+// Independente de progresso de assets (a cena é procedural + vídeo leve).
 export default function IntroLoader() {
-  const { progress, active } = useProgress();
-  if (!active && progress >= 100) return null;
+  const [leaving, setLeaving] = useState(false);
+  const [done, setDone] = useState(false);
+
+  // Só é montado quando a intro 3D está ativa (motion habilitado), então não
+  // precisa tratar reduced-motion aqui — esse caso já cai no fallback.
+  useEffect(() => {
+    const t1 = setTimeout(() => setLeaving(true), 1300);
+    const t2 = setTimeout(() => setDone(true), 1950);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, []);
+
+  if (done) return null;
 
   return (
     <div
-      className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-6"
+      className={`absolute inset-0 z-20 flex items-center justify-center transition-opacity duration-700 ${
+        leaving ? "opacity-0" : "opacity-100"
+      }`}
       style={{ backgroundColor: "var(--color-dark-blue)" }}
     >
       <h1
@@ -22,13 +38,6 @@ export default function IntroLoader() {
       >
         MENU SYNC
       </h1>
-      <div className="h-1 w-56 overflow-hidden rounded-full bg-white/15">
-        <div
-          className="h-full bg-yellow transition-[width] duration-200"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-      <p className="text-xs tracking-[0.25em] text-white/50">{Math.round(progress)}%</p>
     </div>
   );
 }

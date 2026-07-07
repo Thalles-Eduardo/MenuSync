@@ -1,6 +1,15 @@
 # Design — Intro 3D dirigida por scroll (Home)
 
 **Data:** 2026-07-07
+
+> **Atualização (2026-07-07):** o objeto central deixou de ser o modelo GLB do
+> restaurante (descartado pelo usuário) e passou a ser um **corredor de torii +
+> lanternas procedural** (`ToriiCorridor.tsx`) — geometria leve, sem GLB. A câmera
+> agora **viaja pela trilha** (skim sobre a água → acelera para a luz do fim → flash).
+> A tela de carregamento (`IntroLoader`) virou uma cobertura de marca temporizada
+> (não depende mais de progresso de asset, já que a cena é procedural + vídeo leve).
+> O restante da arquitetura (gate, ScrollTrigger→progress, flash, fallback, backdrop
+> em vídeo do Fuji) permanece igual ao descrito abaixo.
 **Contexto:** Substituir o loader por uma intro imersiva: sobre um fundo em **vídeo** do
 Monte Fuji no lago (`/video/bgLoader.mp4`), o modelo `japanese_restaurant.glb` fica pousado
 sobre a água; ao rolar a página, a câmera plana sobre a água e depois entra no restaurante
