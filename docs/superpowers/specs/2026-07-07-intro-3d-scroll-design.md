@@ -1,10 +1,10 @@
 # Design — Intro 3D dirigida por scroll (Home)
 
 **Data:** 2026-07-07
-**Contexto:** Substituir o loader por uma intro imersiva: sobre o fundo do Monte Fuji no
-lago (`bgLoader.png`), o modelo `japanese_restaurant.glb` fica pousado sobre a água; ao
-rolar a página, a câmera plana sobre a água e depois entra no restaurante com um flash de
-luz, revelando a hero.
+**Contexto:** Substituir o loader por uma intro imersiva: sobre um fundo em **vídeo** do
+Monte Fuji no lago (`/video/bgLoader.mp4`), o modelo `japanese_restaurant.glb` fica pousado
+sobre a água; ao rolar a página, a câmera plana sobre a água e depois entra no restaurante
+com um flash de luz, revelando a hero.
 
 ---
 
@@ -73,8 +73,9 @@ app/(site)/
 **IntroScene.tsx** (`"use client"`):
 - `<Canvas dpr={[1,1.5]} gl={{ antialias:true, alpha:true, powerPreference:"high-performance" }}
   camera={{ position:[posição inicial], fov:55 }}>`.
-- **Backdrop Fuji:** plano grande texturizado com `bgLoader.png` (`useTexture`), posicionado
-  ao fundo para dar leve profundidade/parallax conforme a câmera avança.
+- **Backdrop Fuji:** plano grande texturizado com o **vídeo** `/video/bgLoader.mp4`
+  (`useVideoTexture` do drei — autoplay/muted/loop/playsInline), posicionado ao fundo para dar
+  leve profundidade/parallax conforme a câmera avança.
 - `<RestaurantModel/>` posicionado sobre a linha da água (terço inferior do enquadramento).
 - **Luzes:** ambiente suave + luz quente (point/spot) próxima do restaurante, cuja
   intensidade cresce conforme `progress` (reforça o "acender" ao entrar).
@@ -111,10 +112,10 @@ app/(site)/
 
 ## 5. Dependências
 
-- **Adicionar:** `@react-three/drei` (`useGLTF`, `useProgress`, `useTexture`).
+- **Adicionar:** `@react-three/drei` (`useGLTF`, `useProgress`, `useVideoTexture`).
 - Já instalados: `@react-three/fiber`, `three`, `gsap`, `@gsap/react`.
-- Assets: `/public/3d/japanese_restaurant.glb`, `/public/bgLoader.png` (já presentes).
-  Possível `/public/draco/` se o modelo for Draco.
+- Assets: `/public/3d/japanese_restaurant.glb`, `/public/video/bgLoader.mp4` (já presentes).
+  Draco descartado (modelo não é comprimido — confirmado na análise do GLB).
 
 ---
 
@@ -143,8 +144,11 @@ app/(site)/
 
 ## 8. Pendências / riscos
 
-- **Peso do GLB (6.9 MB):** mitigado por lazy-load + tela de progresso; medir LCP na Fase 12.
-- **Draco:** confirmar compressão e servir decoder se necessário.
+- **Peso do GLB (6.9 MB) + vídeo (2.4 MB):** mitigado por lazy-load + tela de progresso;
+  medir LCP na Fase 12. O vídeo não entra no `useProgress` (não passa pelo loading manager do
+  three) — o progresso é dirigido pelo GLB.
+- **Autoplay do vídeo:** garantir `muted` + `playsInline` para o autoplay ser permitido; em
+  headless o vídeo pode não decodificar (conferência ao vivo).
 - **Enquadramento do modelo:** `scale`/`position`/câmera precisam de ajuste fino ao vivo
   (iterativo) para "pousar sobre a água" e o trajeto ficar natural.
 - **Pin + página com outras seções:** garantir que o `ScrollTrigger.refresh()` e a altura da
