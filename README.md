@@ -1,12 +1,12 @@
-# 🍽️ Restaurante
+# 🍽️ MenuSync
 
-> Um sistema completo para gestão de restaurantes desenvolvido com Next.js, TypeScript, PostgreSQL, Prisma e Docker.
+> Site de um restaurante japonês com home imersiva e painel de gestão, desenvolvido com Next.js, TypeScript, PostgreSQL, Prisma e Docker.
 
 ---
 
 # 📌 Objetivo
 
-Desenvolver um sistema moderno para restaurantes, permitindo o gerenciamento de cardápio, pedidos, clientes, mesas, reservas, estoque, funcionários e financeiro.
+Desenvolver o site de um restaurante japonês com uma home moderna e interativa, além de um painel administrativo para gerenciar cardápio, pedidos, clientes, mesas, reservas, estoque, funcionários e financeiro.
 
 ---
 # 🛠 Stack
@@ -151,18 +151,38 @@ Construir a base visual do projeto no Figma.
 
 ---
 
-# Fase 03 — Landing Page
+# Fase 03 — Home / Landing
 
 ### Seções
 
-- [ ] Hero
-- [ ] Funcionalidades
-- [ ] Benefícios
-- [ ] Demonstração
-- [ ] Planos
-- [ ] FAQ
+- [x] Hero (prato em destaque interativo)
+- [ ] Pratos em destaque
+- [ ] Sobre o restaurante
+- [ ] Galeria
+- [ ] Avaliações dos clientes
+- [ ] Reservas (CTA)
+- [ ] Cupom por e-mail
+- [ ] Localização & horário
 - [ ] Contato
 - [ ] Footer
+
+## Cupom por e-mail
+
+Captura de lead na home: o visitante digita um **e-mail válido** no campo de cupom e **recebe o cupom por e-mail**.
+
+Fluxo:
+
+1. Campo de e-mail na home, com validação (Zod: formato válido e obrigatório).
+2. Submit chama uma Route Handler (`POST /api/coupons`).
+3. O backend valida o e-mail, gera/associa um código de cupom (registro em `Coupons`) e o vincula ao e-mail.
+4. Envio do e-mail transacional com o cupom (ex.: Resend / Nodemailer).
+5. Feedback na UI: sucesso, e-mail já cadastrado ou erro.
+
+Regras:
+
+- [ ] Um cupom por e-mail (evitar duplicidade)
+- [ ] Rate limit anti-abuso no endpoint
+- [ ] Cupom com código, validade e status (ativo / usado / expirado)
 
 ---
 
@@ -171,7 +191,6 @@ Construir a base visual do projeto no Figma.
 ## Modelagem
 
 - [ ] Users
-- [ ] Restaurants
 - [ ] Employees
 - [ ] Customers
 - [ ] Categories
@@ -180,18 +199,19 @@ Construir a base visual do projeto no Figma.
 - [ ] Orders
 - [ ] OrderItems
 - [ ] Payments
-- [ ] Coupons
+- [ ] Coupons (código, e-mail, validade, status — ver "Cupom por e-mail" na Fase 03)
 
 ---
 
-# Fase 05 — Autenticação
+# Fase 05 — Autenticação (Admin)
+
+> Apenas acesso administrativo (dono/funcionários). Sem contas nem login de cliente.
 
 - [ ] Login
-- [ ] Cadastro
 - [ ] Recuperação de senha
 - [ ] Tokens
 - [ ] Sessão
-- [ ] Permissões
+- [ ] Permissões (por cargo)
 - [ ] Middleware
 
 ---
