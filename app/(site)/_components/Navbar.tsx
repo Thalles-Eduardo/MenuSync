@@ -1,9 +1,9 @@
 import Image from "next/image";
+import HamburgerMenu from "./HamburgerMenu";
 
 const icons = [
   { src: "/icons/search.svg", alt: "Buscar" },
   { src: "/icons/cart.svg", alt: "Carrinho" },
-  { src: "/icons/menu.svg", alt: "Menu" },
 ];
 
 export default function Navbar() {
@@ -33,6 +33,7 @@ export default function Navbar() {
             />
           </button>
         ))}
+        <HamburgerMenu />
       </div>
     </nav>
   );
