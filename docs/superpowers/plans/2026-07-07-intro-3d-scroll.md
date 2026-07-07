@@ -136,7 +136,7 @@ git commit -m "feat(intro): carrega e normaliza o modelo 3D do restaurante (drei
 ```tsx
 "use client";
 
-import { Suspense, useMemo, type RefObject } from "react";
+import { Suspense, useMemo, useRef, type RefObject } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useVideoTexture } from "@react-three/drei";
 import * as THREE from "three";
@@ -180,13 +180,13 @@ function CameraRig({ progress }: Props) {
 
 // Intensifica a luz quente conforme a câmera entra.
 function WarmLight({ progress }: Props) {
-  const ref = useMemo(() => ({ current: null as THREE.PointLight | null }), []);
+  const ref = useRef<THREE.PointLight>(null);
   useFrame(() => {
     if (ref.current) ref.current.intensity = 4 + (progress.current ?? 0) * 10;
   });
   return (
     <pointLight
-      ref={(l) => (ref.current = l)}
+      ref={ref}
       position={[0, 1.4, 1.2]}
       distance={9}
       color="#ffcf8a"
