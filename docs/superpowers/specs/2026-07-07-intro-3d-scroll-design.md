@@ -2,6 +2,11 @@
 
 **Data:** 2026-07-07
 
+> **REVERTIDO (2026-07-07):** a intro (3D → corredor de torii → scroll-scrub de
+> vídeo → torii SVG sobre vídeo do lago) foi descartada a pedido do usuário. A home
+> voltou ao `Loader` original (fundo azul + "MENU SYNC" + subtítulo) + hero. Este doc
+> fica como registro da exploração.
+
 > **Atualização (2026-07-07):** o objeto central deixou de ser o modelo GLB do
 > restaurante (descartado pelo usuário) e passou a ser um **corredor de torii +
 > lanternas procedural** (`ToriiCorridor.tsx`) — geometria leve, sem GLB. A câmera
