@@ -46,7 +46,7 @@ function CameraRig({ progress }: Props) {
 function WarmLight({ progress }: Props) {
   const ref = useRef<THREE.PointLight>(null);
   useFrame(() => {
-    if (ref.current) ref.current.intensity = 4 + (progress.current ?? 0) * 10;
+    if (ref.current) ref.current.intensity = 2 + (progress.current ?? 0) * 12;
   });
   return (
     <pointLight
@@ -54,7 +54,7 @@ function WarmLight({ progress }: Props) {
       position={[0, 1.4, 1.2]}
       distance={9}
       color="#ffcf8a"
-      intensity={4}
+      intensity={2}
     />
   );
 }
@@ -68,8 +68,8 @@ function FujiBackdrop() {
     start: true,
   });
   return (
-    <mesh position={[0, 2.5, -12]}>
-      <planeGeometry args={[42, 23.6]} />
+    <mesh position={[0, 0, -12]}>
+      <planeGeometry args={[52, 32]} />
       <meshBasicMaterial map={tex} toneMapped={false} />
     </mesh>
   );
@@ -81,6 +81,9 @@ export default function IntroScene({ progress }: Props) {
       dpr={[1, 1.5]}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       camera={{ position: [0, 1.2, 9], fov: 55 }}
+      // Preenche o contêiner mesmo se o react-use-measure reportar tamanho
+      // defasado no 1º layout (o <canvas> interno é forçado a 100%).
+      className="!absolute !inset-0 !h-full !w-full [&_canvas]:!h-full [&_canvas]:!w-full"
     >
       <ambientLight intensity={0.55} />
       <directionalLight position={[5, 8, 5]} intensity={1.1} />

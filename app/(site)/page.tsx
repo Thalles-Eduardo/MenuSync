@@ -1,11 +1,11 @@
 import HeroShowcase from "./_components/HeroShowcase";
-import Loader from "./_components/Loader";
+import IntroExperience from "./_components/intro/IntroExperience";
 import { dishes } from "./_data/dishes";
 
 export default function SiteHome() {
   return (
     <>
-      <Loader />
+      <IntroExperience />
       <HeroShowcase dishes={dishes} />
     </>
   );
