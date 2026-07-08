@@ -11,6 +11,7 @@ export type Dish = {
   price: number;
   plate: string; // imagem central (alta)
   thumb: string; // miniatura do carrossel
+  video?: string; // vídeo de preparo (abre no "Play no vídeo")
   reviews: Review[];
   ingredients: string[];
 };
@@ -23,6 +24,7 @@ export const dishes: Dish[] = [
     price: 149.99,
     plate: "/plate1.webp",
     thumb: "/food1.webp",
+    video: "/video/preparation1.mp4",
     reviews: [
       { author: "Maria Bretanio", rating: 3, text: "Combinação equilibrada, veio tudo fresquinho." },
       { author: "Barry Alien", rating: 3, text: "Porção generosa, o frango teriyaki é o destaque." },

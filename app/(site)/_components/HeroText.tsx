@@ -1,6 +1,6 @@
-import Image from "next/image";
 import type { Dish } from "../_data/dishes";
 import AddToCartButton from "./AddToCartButton";
+import PlayVideoButton from "./PlayVideoButton";
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -20,10 +20,7 @@ export default function HeroText({ dish }: { dish: Dish }) {
       </p>
 
       <div className="mt-10 flex items-center gap-8">
-        <button className="flex items-center gap-2 text-white/90 transition hover:text-white">
-          <Image src="/icons/play.svg" alt="" width={28} height={28} />
-          <span>Play no vídeo</span>
-        </button>
+        {dish.video && <PlayVideoButton src={dish.video} />}
         <AddToCartButton />
       </div>
     </div>
