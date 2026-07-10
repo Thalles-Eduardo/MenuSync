@@ -43,21 +43,16 @@ export default function HomeExperience({ dishes }: { dishes: Dish[] }) {
       const root = rootRef.current;
       if (!root) return;
 
-      const group = root.querySelector<HTMLElement>(".carry-group");
+      const flyer = root.querySelector<HTMLElement>(".flying-plate");
       const heroPlate = root.querySelector<HTMLElement>(".plate-img");
+      // Wrapper estável do prato (não remonta na troca, nem é animado pelo hero) —
+      // usado para esconder o prato durante o voo sem brigar com a animação de troca.
       const plateAnchor = root.querySelector<HTMLElement>(".plate-anchor");
       const seat = root.querySelector<HTMLElement>(".bento-seat-img");
-      const handL = root.querySelector<HTMLElement>(".hand-left");
-      const handR = root.querySelector<HTMLElement>(".hand-right");
-      if (!group || !heroPlate || !plateAnchor || !seat || !handL || !handR) return;
+      if (!flyer || !heroPlate || !plateAnchor || !seat) return;
 
-      // Tamanho-base do grupo (px, definido no CSS). A escala cuida do encolhimento.
-      const BASE = 560;
-
-      const rect = (el: HTMLElement) => el.getBoundingClientRect();
-      const absTop = (el: HTMLElement) => rect(el).top + window.scrollY;
-      const absLeft = (el: HTMLElement) => rect(el).left + window.scrollX;
-
+      // O voo é uma "entrada": o prato descola do hero e pousa no card grande do
+      // bento ao longo de ~1 tela de scroll. Depois o bento inteiro rola normal.
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: root,
@@ -68,55 +63,46 @@ export default function HomeExperience({ dishes }: { dishes: Dish[] }) {
         },
       });
 
+      // Posições ABSOLUTAS (no documento), independentes do scroll atual — evita que um
+      // refresh no meio da rolagem recapture o rect numa posição errada. Converto para
+      // coordenada de viewport subtraindo o scroll conhecido no início/fim do voo.
+      const rect = (el: HTMLElement) => el.getBoundingClientRect();
+      const absTop = (el: HTMLElement) => rect(el).top + window.scrollY;
+      const absLeft = (el: HTMLElement) => rect(el).left + window.scrollX;
       const startScroll = () => tl.scrollTrigger?.start ?? 0;
       const endScroll = () => startScroll() + window.innerHeight;
 
+      // Crossfade no início: o prato real do hero some, o flyer assume no mesmo lugar.
+      // `fromTo` com `from` explícito (autoAlpha:1) evita capturar um start=0 da
+      // animação de troca do hero (que remonta o prato e o inicia em opacity 0).
+      tl.set(flyer, { autoAlpha: 0 }, 0);
       tl.set(seat, { autoAlpha: 0 }, 0);
-
-      // Handoff de entrada: o prato do hero some, o grupo assume no mesmo lugar.
       tl.fromTo(plateAnchor, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.05, ease: "none" }, 0);
-      tl.fromTo(group, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.05, ease: "none" }, 0);
+      tl.to(flyer, { autoAlpha: 1, duration: 0.05, ease: "none" }, 0);
 
-      // Carregar: o grupo viaja (x/y absoluto) e escala do tamanho do prato do hero
-      // até o tamanho do assento do card. Coords absolutas = à prova de refresh.
+      // O voo: da posição do prato do hero (no topo) até a do assento (no fim do voo).
       tl.fromTo(
-        group,
+        flyer,
         {
           x: () => absLeft(heroPlate),
           y: () => absTop(heroPlate) - startScroll(),
-          scale: () => rect(heroPlate).width / BASE,
+          width: () => rect(heroPlate).width,
+          height: () => rect(heroPlate).height,
         },
         {
           x: () => absLeft(seat),
           y: () => absTop(seat) - endScroll(),
-          scale: () => rect(seat).width / BASE,
+          width: () => rect(seat).width,
+          height: () => rect(seat).height,
           ease: "none",
           duration: 1,
         },
         0,
       );
 
-      // Pegar: mãos sobem de baixo + convergem + aparecem (0.05 → 0.18).
-      tl.fromTo(
-        handL,
-        { yPercent: 60, xPercent: -22, autoAlpha: 0 },
-        { yPercent: 0, xPercent: 0, autoAlpha: 1, ease: "power2.out", duration: 0.13 },
-        0.05,
-      );
-      tl.fromTo(
-        handR,
-        { yPercent: 60, xPercent: 22, autoAlpha: 0 },
-        { yPercent: 0, xPercent: 0, autoAlpha: 1, ease: "power2.out", duration: 0.13 },
-        0.05,
-      );
-
-      // Soltar: mãos afastam + descem + somem (0.82 → 0.95).
-      tl.to(handL, { yPercent: 65, xPercent: -30, autoAlpha: 0, ease: "power2.in", duration: 0.13 }, 0.82);
-      tl.to(handR, { yPercent: 65, xPercent: 30, autoAlpha: 0, ease: "power2.in", duration: 0.13 }, 0.82);
-
-      // Pouso: revela o prato no card e oculta o grupo (handoff de saída).
+      // No fim, revela o prato pousado no card e oculta o flyer (handoff).
       tl.to(seat, { autoAlpha: 1, duration: 0.05, ease: "none" }, 0.95);
-      tl.to(group, { autoAlpha: 0, duration: 0.05, ease: "none" }, 0.95);
+      tl.to(flyer, { autoAlpha: 0, duration: 0.05, ease: "none" }, 0.95);
     },
     { scope: rootRef, dependencies: [enabled, activeDishId] },
   );
@@ -137,47 +123,15 @@ export default function HomeExperience({ dishes }: { dishes: Dish[] }) {
     <div ref={rootRef} className="stage-pin relative w-full overflow-x-hidden">
       <HeroShowcase dishes={dishes} activeDishId={activeDish.id} onSelectDish={setActiveDishId} />
       <MenuBento activeDish={activeDish} otherDishes={otherDishes} />
-
-      <div className="carry-group pointer-events-none invisible fixed left-0 top-0 z-[60] origin-top-left will-change-transform">
-        <Image
-          key={activeDish.id}
-          src={activeDish.plate}
-          alt=""
-          aria-hidden="true"
-          fill
-          sizes="560px"
-          className="flying-plate object-contain drop-shadow-2xl"
-        />
-        <span className="hand hand-left" aria-hidden="true" />
-        <span className="hand hand-right" aria-hidden="true" />
-      </div>
-
-      <style jsx>{`
-        .carry-group {
-          width: 560px;
-          height: 560px;
-        }
-        .hand {
-          position: absolute;
-          width: 62%;
-          aspect-ratio: 1 / 1;
-          bottom: -6%;
-          background-image: url("/hands.png");
-          background-repeat: no-repeat;
-          background-size: 200% 100%;
-          opacity: 0;
-          filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.35));
-          will-change: transform, opacity;
-        }
-        .hand-left {
-          left: -20%;
-          background-position: 0% 50%;
-        }
-        .hand-right {
-          right: -20%;
-          background-position: 100% 50%;
-        }
-      `}</style>
+      <Image
+        key={activeDish.id}
+        src={activeDish.plate}
+        alt=""
+        aria-hidden="true"
+        width={520}
+        height={520}
+        className="flying-plate pointer-events-none fixed left-0 top-0 z-[60] h-auto w-auto opacity-0 drop-shadow-2xl will-change-transform"
+      />
     </div>
   );
 }
