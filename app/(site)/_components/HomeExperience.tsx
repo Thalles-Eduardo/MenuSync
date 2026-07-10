@@ -45,8 +45,11 @@ export default function HomeExperience({ dishes }: { dishes: Dish[] }) {
 
       const flyer = root.querySelector<HTMLElement>(".flying-plate");
       const heroPlate = root.querySelector<HTMLElement>(".plate-img");
+      // Wrapper estável do prato (não remonta na troca, nem é animado pelo hero) —
+      // usado para esconder o prato durante o voo sem brigar com a animação de troca.
+      const plateAnchor = root.querySelector<HTMLElement>(".plate-anchor");
       const seat = root.querySelector<HTMLElement>(".bento-seat-img");
-      if (!flyer || !heroPlate || !seat) return;
+      if (!flyer || !heroPlate || !plateAnchor || !seat) return;
 
       // O voo é uma "entrada": o prato descola do hero e pousa no card grande do
       // bento ao longo de ~1 tela de scroll. Depois o bento inteiro rola normal.
@@ -70,9 +73,11 @@ export default function HomeExperience({ dishes }: { dishes: Dish[] }) {
       const endScroll = () => startScroll() + window.innerHeight;
 
       // Crossfade no início: o prato real do hero some, o flyer assume no mesmo lugar.
+      // `fromTo` com `from` explícito (autoAlpha:1) evita capturar um start=0 da
+      // animação de troca do hero (que remonta o prato e o inicia em opacity 0).
       tl.set(flyer, { autoAlpha: 0 }, 0);
       tl.set(seat, { autoAlpha: 0 }, 0);
-      tl.to(heroPlate, { autoAlpha: 0, duration: 0.05, ease: "none" }, 0);
+      tl.fromTo(plateAnchor, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.05, ease: "none" }, 0);
       tl.to(flyer, { autoAlpha: 1, duration: 0.05, ease: "none" }, 0);
 
       // O voo: da posição do prato do hero (no topo) até a do assento (no fim do voo).
