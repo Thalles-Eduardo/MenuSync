@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef } from "react";
+import dynamic from "next/dynamic";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -8,6 +9,15 @@ import { PLACE } from "./about/about-data";
 import Timeline from "./about/Timeline";
 
 gsap.registerPlugin(ScrollTrigger);
+
+const RestaurantMap = dynamic(() => import("./about/RestaurantMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center text-white/40">
+      Carregando mapa…
+    </div>
+  ),
+});
 
 export default function AboutSection() {
   const scope = useRef<HTMLElement>(null);
@@ -67,8 +77,7 @@ export default function AboutSection() {
 
         <div className="mt-20 grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr]">
           <div className="about-map-slot h-[360px] w-full overflow-hidden rounded-2xl border border-white/10 bg-black/40 md:h-[420px]">
-            {/* RestaurantMap entra na Task 3. */}
-            <div className="flex h-full w-full items-center justify-center text-white/40">Mapa</div>
+            <RestaurantMap />
           </div>
 
           <aside className="about-reveal flex flex-col justify-center gap-6 rounded-2xl border border-white/10 bg-white/[0.04] p-8">
