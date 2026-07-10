@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { PLACE } from "./about/about-data";
+import Timeline from "./about/Timeline";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -62,7 +63,7 @@ export default function AboutSection() {
           </p>
         </div>
 
-        {/* Timeline entra na Task 2 (entre a história e a localização). */}
+        <Timeline />
 
         <div className="mt-20 grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr]">
           <div className="about-map-slot h-[360px] w-full overflow-hidden rounded-2xl border border-white/10 bg-black/40 md:h-[420px]">
