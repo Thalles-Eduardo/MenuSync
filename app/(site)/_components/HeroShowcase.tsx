@@ -107,6 +107,8 @@ export default function HeroShowcase({
       if (reduce) return;
       const el = scope.current;
       if (!el || !window.matchMedia("(pointer: fine)").matches) return;
+      // Dentro do palco animado (HomeExperience), o prato é controlado pelo scroll; sem parallax.
+      if (el.closest(".stage-pin")) return;
       const plate = el.querySelector<HTMLElement>(".plate-img");
       if (!plate) return;
 
