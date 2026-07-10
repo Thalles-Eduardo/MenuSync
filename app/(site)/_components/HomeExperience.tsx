@@ -43,16 +43,19 @@ export default function HomeExperience({ dishes }: { dishes: Dish[] }) {
       const root = rootRef.current;
       if (!root) return;
 
-      const flyer = root.querySelector<HTMLElement>(".flying-plate");
+      const group = root.querySelector<HTMLElement>(".carry-group");
       const heroPlate = root.querySelector<HTMLElement>(".plate-img");
-      // Wrapper estável do prato (não remonta na troca, nem é animado pelo hero) —
-      // usado para esconder o prato durante o voo sem brigar com a animação de troca.
       const plateAnchor = root.querySelector<HTMLElement>(".plate-anchor");
       const seat = root.querySelector<HTMLElement>(".bento-seat-img");
-      if (!flyer || !heroPlate || !plateAnchor || !seat) return;
+      if (!group || !heroPlate || !plateAnchor || !seat) return;
 
-      // O voo é uma "entrada": o prato descola do hero e pousa no card grande do
-      // bento ao longo de ~1 tela de scroll. Depois o bento inteiro rola normal.
+      // Tamanho-base do grupo (px, definido no CSS). A escala cuida do encolhimento.
+      const BASE = 560;
+
+      const rect = (el: HTMLElement) => el.getBoundingClientRect();
+      const absTop = (el: HTMLElement) => rect(el).top + window.scrollY;
+      const absLeft = (el: HTMLElement) => rect(el).left + window.scrollX;
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: root,
@@ -63,46 +66,37 @@ export default function HomeExperience({ dishes }: { dishes: Dish[] }) {
         },
       });
 
-      // Posições ABSOLUTAS (no documento), independentes do scroll atual — evita que um
-      // refresh no meio da rolagem recapture o rect numa posição errada. Converto para
-      // coordenada de viewport subtraindo o scroll conhecido no início/fim do voo.
-      const rect = (el: HTMLElement) => el.getBoundingClientRect();
-      const absTop = (el: HTMLElement) => rect(el).top + window.scrollY;
-      const absLeft = (el: HTMLElement) => rect(el).left + window.scrollX;
       const startScroll = () => tl.scrollTrigger?.start ?? 0;
       const endScroll = () => startScroll() + window.innerHeight;
 
-      // Crossfade no início: o prato real do hero some, o flyer assume no mesmo lugar.
-      // `fromTo` com `from` explícito (autoAlpha:1) evita capturar um start=0 da
-      // animação de troca do hero (que remonta o prato e o inicia em opacity 0).
-      tl.set(flyer, { autoAlpha: 0 }, 0);
       tl.set(seat, { autoAlpha: 0 }, 0);
-      tl.fromTo(plateAnchor, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.05, ease: "none" }, 0);
-      tl.to(flyer, { autoAlpha: 1, duration: 0.05, ease: "none" }, 0);
 
-      // O voo: da posição do prato do hero (no topo) até a do assento (no fim do voo).
+      // Handoff de entrada: o prato do hero some, o grupo assume no mesmo lugar.
+      tl.fromTo(plateAnchor, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.05, ease: "none" }, 0);
+      tl.fromTo(group, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.05, ease: "none" }, 0);
+
+      // Carregar: o grupo viaja (x/y absoluto) e escala do tamanho do prato do hero
+      // até o tamanho do assento do card. Coords absolutas = à prova de refresh.
       tl.fromTo(
-        flyer,
+        group,
         {
           x: () => absLeft(heroPlate),
           y: () => absTop(heroPlate) - startScroll(),
-          width: () => rect(heroPlate).width,
-          height: () => rect(heroPlate).height,
+          scale: () => rect(heroPlate).width / BASE,
         },
         {
           x: () => absLeft(seat),
           y: () => absTop(seat) - endScroll(),
-          width: () => rect(seat).width,
-          height: () => rect(seat).height,
+          scale: () => rect(seat).width / BASE,
           ease: "none",
           duration: 1,
         },
         0,
       );
 
-      // No fim, revela o prato pousado no card e oculta o flyer (handoff).
+      // Pouso: revela o prato no card e oculta o grupo (handoff de saída).
       tl.to(seat, { autoAlpha: 1, duration: 0.05, ease: "none" }, 0.95);
-      tl.to(flyer, { autoAlpha: 0, duration: 0.05, ease: "none" }, 0.95);
+      tl.to(group, { autoAlpha: 0, duration: 0.05, ease: "none" }, 0.95);
     },
     { scope: rootRef, dependencies: [enabled, activeDishId] },
   );
@@ -123,15 +117,47 @@ export default function HomeExperience({ dishes }: { dishes: Dish[] }) {
     <div ref={rootRef} className="stage-pin relative w-full overflow-x-hidden">
       <HeroShowcase dishes={dishes} activeDishId={activeDish.id} onSelectDish={setActiveDishId} />
       <MenuBento activeDish={activeDish} otherDishes={otherDishes} />
-      <Image
-        key={activeDish.id}
-        src={activeDish.plate}
-        alt=""
-        aria-hidden="true"
-        width={520}
-        height={520}
-        className="flying-plate pointer-events-none fixed left-0 top-0 z-[60] h-auto w-auto opacity-0 drop-shadow-2xl will-change-transform"
-      />
+
+      <div className="carry-group pointer-events-none invisible fixed left-0 top-0 z-[60] origin-top-left will-change-transform">
+        <Image
+          key={activeDish.id}
+          src={activeDish.plate}
+          alt=""
+          aria-hidden="true"
+          fill
+          sizes="560px"
+          className="flying-plate object-contain drop-shadow-2xl"
+        />
+        <span className="hand hand-left" aria-hidden="true" />
+        <span className="hand hand-right" aria-hidden="true" />
+      </div>
+
+      <style jsx>{`
+        .carry-group {
+          width: 560px;
+          height: 560px;
+        }
+        .hand {
+          position: absolute;
+          width: 62%;
+          aspect-ratio: 1 / 1;
+          bottom: -6%;
+          background-image: url("/hands.png");
+          background-repeat: no-repeat;
+          background-size: 200% 100%;
+          opacity: 0;
+          filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.35));
+          will-change: transform, opacity;
+        }
+        .hand-left {
+          left: -20%;
+          background-position: 0% 50%;
+        }
+        .hand-right {
+          right: -20%;
+          background-position: 100% 50%;
+        }
+      `}</style>
     </div>
   );
 }
