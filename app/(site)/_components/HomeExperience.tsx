@@ -47,7 +47,9 @@ export default function HomeExperience({ dishes }: { dishes: Dish[] }) {
       const heroPlate = root.querySelector<HTMLElement>(".plate-img");
       const plateAnchor = root.querySelector<HTMLElement>(".plate-anchor");
       const seat = root.querySelector<HTMLElement>(".bento-seat-img");
-      if (!group || !heroPlate || !plateAnchor || !seat) return;
+      const handL = root.querySelector<HTMLElement>(".hand-left");
+      const handR = root.querySelector<HTMLElement>(".hand-right");
+      if (!group || !heroPlate || !plateAnchor || !seat || !handL || !handR) return;
 
       // Tamanho-base do grupo (px, definido no CSS). A escala cuida do encolhimento.
       const BASE = 560;
@@ -93,6 +95,24 @@ export default function HomeExperience({ dishes }: { dishes: Dish[] }) {
         },
         0,
       );
+
+      // Pegar: mãos sobem de baixo + convergem + aparecem (0.05 → 0.18).
+      tl.fromTo(
+        handL,
+        { yPercent: 60, xPercent: -22, autoAlpha: 0 },
+        { yPercent: 0, xPercent: 0, autoAlpha: 1, ease: "power2.out", duration: 0.13 },
+        0.05,
+      );
+      tl.fromTo(
+        handR,
+        { yPercent: 60, xPercent: 22, autoAlpha: 0 },
+        { yPercent: 0, xPercent: 0, autoAlpha: 1, ease: "power2.out", duration: 0.13 },
+        0.05,
+      );
+
+      // Soltar: mãos afastam + descem + somem (0.82 → 0.95).
+      tl.to(handL, { yPercent: 65, xPercent: -30, autoAlpha: 0, ease: "power2.in", duration: 0.13 }, 0.82);
+      tl.to(handR, { yPercent: 65, xPercent: 30, autoAlpha: 0, ease: "power2.in", duration: 0.13 }, 0.82);
 
       // Pouso: revela o prato no card e oculta o grupo (handoff de saída).
       tl.to(seat, { autoAlpha: 1, duration: 0.05, ease: "none" }, 0.95);
