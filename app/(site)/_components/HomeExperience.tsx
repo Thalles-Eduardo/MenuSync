@@ -35,79 +35,74 @@ export default function HomeExperience({ dishes }: { dishes: Dish[] }) {
     );
   }, [hydrated]);
 
-  const stageRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
       if (!enabled) return;
-      const stage = stageRef.current;
-      if (!stage) return;
+      const root = rootRef.current;
+      if (!root) return;
 
-      const pinWrap = stage.querySelector<HTMLElement>(".stage-pin");
-      const heroLayer = stage.querySelector<HTMLElement>(".hero-layer");
-      const bentoLayer = stage.querySelector<HTMLElement>(".bento-layer");
-      const flyer = stage.querySelector<HTMLElement>(".flying-plate");
-      const heroPlate = stage.querySelector<HTMLElement>(".plate-img");
-      const seat = stage.querySelector<HTMLElement>(".bento-plate-seat");
-      const seatImg = stage.querySelector<HTMLElement>(".bento-seat-img");
-      if (!pinWrap || !heroLayer || !bentoLayer || !flyer || !heroPlate || !seat || !seatImg) return;
+      const flyer = root.querySelector<HTMLElement>(".flying-plate");
+      const heroPlate = root.querySelector<HTMLElement>(".plate-img");
+      const seat = root.querySelector<HTMLElement>(".bento-seat-img");
+      if (!flyer || !heroPlate || !seat) return;
 
-      const placeAt = (target: HTMLElement) => {
-        const r = target.getBoundingClientRect();
-        return { x: r.left, y: r.top, width: r.width, height: r.height };
-      };
-
+      // O voo é uma "entrada": o prato descola do hero e pousa no card grande do
+      // bento ao longo de ~1 tela de scroll. Depois o bento inteiro rola normal.
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: stage,
+          trigger: root,
           start: "top top",
-          end: "bottom bottom",
+          end: () => "+=" + window.innerHeight,
           scrub: true,
-          pin: pinWrap,
-          pinSpacing: true,
           invalidateOnRefresh: true,
         },
       });
 
-      tl.set(flyer, { autoAlpha: 1 });
-      tl.set(seatImg, { autoAlpha: 0 }, 0);
+      // Posições ABSOLUTAS (no documento), independentes do scroll atual — evita que um
+      // refresh no meio da rolagem recapture o rect numa posição errada. Converto para
+      // coordenada de viewport subtraindo o scroll conhecido no início/fim do voo.
+      const rect = (el: HTMLElement) => el.getBoundingClientRect();
+      const absTop = (el: HTMLElement) => rect(el).top + window.scrollY;
+      const absLeft = (el: HTMLElement) => rect(el).left + window.scrollX;
+      const startScroll = () => tl.scrollTrigger?.start ?? 0;
+      const endScroll = () => startScroll() + window.innerHeight;
+
+      // Crossfade no início: o prato real do hero some, o flyer assume no mesmo lugar.
+      tl.set(flyer, { autoAlpha: 0 }, 0);
+      tl.set(seat, { autoAlpha: 0 }, 0);
+      tl.to(heroPlate, { autoAlpha: 0, duration: 0.05, ease: "none" }, 0);
+      tl.to(flyer, { autoAlpha: 1, duration: 0.05, ease: "none" }, 0);
+
+      // O voo: da posição do prato do hero (no topo) até a do assento (no fim do voo).
       tl.fromTo(
         flyer,
         {
-          x: () => placeAt(heroPlate).x,
-          y: () => placeAt(heroPlate).y,
-          width: () => placeAt(heroPlate).width,
-          height: () => placeAt(heroPlate).height,
-          rotation: 0,
+          x: () => absLeft(heroPlate),
+          y: () => absTop(heroPlate) - startScroll(),
+          width: () => rect(heroPlate).width,
+          height: () => rect(heroPlate).height,
         },
         {
-          x: () => placeAt(seat).x + (placeAt(seat).width - placeAt(seatImg).width) / 2,
-          y: () => placeAt(seat).y + (placeAt(seat).height - placeAt(seatImg).height) / 2,
-          width: () => placeAt(seatImg).width,
-          height: () => placeAt(seatImg).height,
-          rotation: 0,
+          x: () => absLeft(seat),
+          y: () => absTop(seat) - endScroll(),
+          width: () => rect(seat).width,
+          height: () => rect(seat).height,
           ease: "none",
+          duration: 1,
         },
         0,
       );
 
-      tl.to(heroLayer, { autoAlpha: 0, ease: "none" }, 0);
-      tl.fromTo(bentoLayer, { autoAlpha: 0 }, { autoAlpha: 1, ease: "none" }, 0.15);
-
-      tl.from(
-        stage.querySelectorAll(".bento-card, .bento-cta"),
-        { autoAlpha: 0, y: 30, stagger: 0.06, ease: "power2.out" },
-        0.45,
-      );
-
-      tl.set(seatImg, { autoAlpha: 1 }, 0.92);
-      tl.set(flyer, { autoAlpha: 0 }, 0.93);
-
-      ScrollTrigger.refresh();
+      // No fim, revela o prato pousado no card e oculta o flyer (handoff).
+      tl.to(seat, { autoAlpha: 1, duration: 0.05, ease: "none" }, 0.95);
+      tl.to(flyer, { autoAlpha: 0, duration: 0.05, ease: "none" }, 0.95);
     },
-    { scope: stageRef, dependencies: [enabled, activeDishId] },
+    { scope: rootRef, dependencies: [enabled, activeDishId] },
   );
 
+  // Fallback: hero e bento empilhados, sem voo (mobile / touch / reduced-motion / SSR).
   if (!enabled) {
     return (
       <>
@@ -117,27 +112,21 @@ export default function HomeExperience({ dishes }: { dishes: Dish[] }) {
     );
   }
 
+  // Caminho animado: hero e bento em fluxo normal + flyer fixo que faz o voo.
+  // A classe `stage-pin` no root desliga o parallax do prato do hero durante o voo.
   return (
-    <div ref={stageRef} className="relative w-full overflow-x-hidden" style={{ height: "220vh" }}>
-      <div className="stage-pin relative h-screen w-full overflow-hidden">
-        <div className="hero-layer absolute inset-0">
-          <HeroShowcase dishes={dishes} activeDishId={activeDish.id} onSelectDish={setActiveDishId} />
-        </div>
-
-        <div className="bento-layer absolute inset-0 overflow-hidden opacity-0">
-          <MenuBento activeDish={activeDish} otherDishes={otherDishes} />
-        </div>
-
-        <Image
-          key={activeDish.id}
-          src={activeDish.plate}
-          alt=""
-          aria-hidden="true"
-          width={520}
-          height={520}
-          className="flying-plate pointer-events-none fixed left-0 top-0 z-[60] h-auto w-auto opacity-0 drop-shadow-2xl will-change-transform"
-        />
-      </div>
+    <div ref={rootRef} className="stage-pin relative w-full overflow-x-hidden">
+      <HeroShowcase dishes={dishes} activeDishId={activeDish.id} onSelectDish={setActiveDishId} />
+      <MenuBento activeDish={activeDish} otherDishes={otherDishes} />
+      <Image
+        key={activeDish.id}
+        src={activeDish.plate}
+        alt=""
+        aria-hidden="true"
+        width={520}
+        height={520}
+        className="flying-plate pointer-events-none fixed left-0 top-0 z-[60] h-auto w-auto opacity-0 drop-shadow-2xl will-change-transform"
+      />
     </div>
   );
 }
