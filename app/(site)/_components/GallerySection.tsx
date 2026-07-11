@@ -1,12 +1,25 @@
 "use client";
 
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { galleryImages } from "../_data/gallery";
+import GalleryLightbox from "./GalleryLightbox";
 
 // Mapeia cada foto (na ordem do array) para uma área do mosaico no desktop.
 const AREAS = ["hero", "a", "b", "c", "d", "e"] as const;
 
 export default function GallerySection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const triggersRef = useRef<Array<HTMLButtonElement | null>>([]);
+
+  function handleOpenIndexChange(index: number | null) {
+    if (index === null && openIndex !== null) {
+      // devolve o foco à foto que abriu o lightbox
+      triggersRef.current[openIndex]?.focus();
+    }
+    setOpenIndex(index);
+  }
+
   return (
     <section
       className="gallery-section relative overflow-hidden px-8 py-24 text-white md:px-12 lg:py-28"
@@ -27,6 +40,8 @@ export default function GallerySection() {
             <button
               key={img.src}
               type="button"
+              ref={(el) => { triggersRef.current[i] = el; }}
+              onClick={() => setOpenIndex(i)}
               aria-label={`Ampliar foto: ${img.caption}`}
               className={`gallery-cell cell-${AREAS[i]} group relative min-h-[240px] cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent md:min-h-0`}
             >
@@ -43,6 +58,12 @@ export default function GallerySection() {
             </button>
           ))}
         </div>
+
+        <GalleryLightbox
+          images={galleryImages}
+          openIndex={openIndex}
+          onOpenIndexChange={handleOpenIndexChange}
+        />
       </div>
 
       <style jsx>{`
