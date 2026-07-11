@@ -46,11 +46,20 @@ export default function AboutSection() {
   return (
     <section
       ref={scope}
-      className="about-section relative overflow-hidden px-8 py-24 text-white md:px-12 lg:py-28"
-      style={{ backgroundColor: "var(--color-dark-blue)" }}
+      className="about-section relative overflow-hidden bg-cover bg-center bg-no-repeat px-8 py-24 text-white md:px-12 lg:py-28"
+      style={{
+        backgroundColor: "var(--color-dark-blue)",
+        backgroundImage: "url('/bgAbout.webp')",
+      }}
       aria-label="Sobre o restaurante"
     >
-      <div className="mx-auto max-w-6xl">
+      {/* Overlay para legibilidade do texto/mapa sobre a imagem de fundo */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-[var(--color-dark-blue)]/70"
+        aria-hidden="true"
+      />
+
+      <div className="relative mx-auto max-w-6xl">
         <p className="about-reveal text-sm font-semibold tracking-[0.25em] text-yellow uppercase">
           Nossa história
         </p>
