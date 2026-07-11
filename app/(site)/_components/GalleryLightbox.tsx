@@ -24,6 +24,7 @@ export default function GalleryLightbox({ images, openIndex, onOpenIndexChange }
   const dialogRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
 
+  // Trava scroll + anima a entrada + foco inicial — só quando abre/fecha (não na navegação).
   useEffect(() => {
     if (!open) return;
 
@@ -42,17 +43,38 @@ export default function GalleryLightbox({ images, openIndex, onOpenIndexChange }
 
     dialogRef.current?.focus();
 
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onOpenIndexChange(null);
-      else if (e.key === "ArrowRight") onOpenIndexChange(((openIndex as number) + 1) % n);
-      else if (e.key === "ArrowLeft") onOpenIndexChange(((openIndex as number) - 1 + n) % n);
-    };
-    window.addEventListener("keydown", onKey);
-
     return () => {
-      window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
     };
+  }, [open]);
+
+  // Teclado: navegação (←/→), fechar (Esc) e foco preso (Tab) no dialog.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onOpenIndexChange(null);
+      } else if (e.key === "ArrowRight") {
+        onOpenIndexChange(((openIndex as number) + 1) % n);
+      } else if (e.key === "ArrowLeft") {
+        onOpenIndexChange(((openIndex as number) - 1 + n) % n);
+      } else if (e.key === "Tab") {
+        const focusables = dialogRef.current?.querySelectorAll<HTMLElement>("button");
+        if (!focusables || focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const active = document.activeElement;
+        if (e.shiftKey && (active === first || active === dialogRef.current)) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && active === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [open, openIndex, n, onOpenIndexChange]);
 
   if (!open || !mounted) return null;
