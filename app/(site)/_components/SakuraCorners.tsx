@@ -102,9 +102,13 @@ export default function SakuraCorners() {
       );
       branches.forEach((p) => {
         const len = p.getTotalLength();
-        gsap.set(p, { strokeDasharray: len, strokeDashoffset: 0 });
+        gsap.set(p, { strokeDasharray: len });
       });
 
+      // Gatilho em "bottom 90%": o reveal dispara quando o rodapé da seção
+      // (onde ficam as flores) entra em cena. Depende de existir conteúdo
+      // abaixo do Cardápio (Galeria/Sobre) para que esse rodapé cruze a linha;
+      // se o Cardápio virar a última seção da página, ajuste o start.
       const tl = gsap.timeline({
         scrollTrigger: { trigger: scope.current, start: "bottom 90%", once: true },
       });
