@@ -1,7 +1,13 @@
 "use client";
 
-// Sakura decorativa nos cantos inferiores da section Cardápio.
-// Versão estática (sem animação) — a animação entra na Task 2.
+import { useMemo, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+// Sakura decorativa nos cantos inferiores da section Cardápio, com reveal ao scroll.
+
+gsap.registerPlugin(ScrollTrigger);
 
 const CREAM = "#fbf3ec";
 
@@ -20,8 +26,6 @@ const BLOOMS = [
 ] as const;
 
 function Blossom({ x, y, s, r }: { x: number; y: number; s: number; r: number }) {
-  // Grupo externo (estático): posiciona, inclina e dimensiona a flor.
-  // Grupo interno (.sakura-bloom): alvo da animação GSAP na Task 2.
   return (
     <g transform={`translate(${x} ${y}) rotate(${r}) scale(${s})`}>
       <g className="sakura-bloom">
@@ -79,8 +83,60 @@ function SakuraBranch() {
 }
 
 export default function SakuraCorners() {
+  const scope = useRef<HTMLDivElement>(null);
+  const reduce = useMemo(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    [],
+  );
+
+  useGSAP(
+    () => {
+      if (reduce) return;
+
+      // Prepara cada path do galho para o efeito de "desenhar" (stroke-dashoffset).
+      const branches = gsap.utils.toArray<SVGPathElement>(
+        ".sakura-branch",
+        scope.current,
+      );
+      branches.forEach((p) => {
+        const len = p.getTotalLength();
+        gsap.set(p, { strokeDasharray: len, strokeDashoffset: 0 });
+      });
+
+      const tl = gsap.timeline({
+        scrollTrigger: { trigger: scope.current, start: "bottom 90%", once: true },
+      });
+
+      // 1) galho cresce
+      tl.from(".sakura-branch", {
+        strokeDashoffset: (_i, el) => (el as SVGPathElement).getTotalLength(),
+        duration: 0.8,
+        ease: "power2.out",
+      });
+
+      // 2) flores desabrocham em stagger, começando enquanto o galho ainda desenha
+      tl.from(
+        ".sakura-bloom",
+        {
+          scale: 0,
+          autoAlpha: 0,
+          rotation: -30,
+          transformOrigin: "center center",
+          stagger: 0.12,
+          duration: 0.5,
+          ease: "back.out(1.7)",
+        },
+        "-=0.45",
+      );
+    },
+    { scope, dependencies: [reduce] },
+  );
+
   return (
     <div
+      ref={scope}
       className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
       aria-hidden="true"
     >
