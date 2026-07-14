@@ -11,6 +11,7 @@
   --color-caramel: #e3a56b;
   --color-yellow: #e3c77b;
   --color-green: #96875a;
+  --color-dark-blue: #2A2E37;
 
   /* Fonts */
   --font-sans: var(--font-geist-sans);
@@ -31,5 +32,23 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Cursor de ponteiro em todos os elementos clicáveis (botões, links, controles
+   de formulário). Fica na base para que utilitários do Tailwind ainda prevaleçam. */
+@layer base {
+  button:not(:disabled),
+  [role="button"],
+  a[href],
+  select,
+  summary,
+  input[type="date"],
+  input[type="time"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="submit"],
+  input[type="button"] {
+    cursor: pointer;
+  }
 }
 

@@ -140,15 +140,11 @@ Construir a base visual do projeto no Figma.
 ### Seções
 
 - [x] Hero (prato em destaque interativo)
-- [ ] Pratos em destaque
-- [ ] Sobre o restaurante
-- [ ] Galeria
-- [ ] Avaliações dos clientes
-- [ ] Reservas (CTA)
+- [x] Pratos em destaque
+- [x] Sobre o restaurante (About)
+- [x] Reservas (CTA)
 - [ ] Cupom por e-mail
-- [ ] Localização & horário
-- [ ] Contato
-- [ ] Footer
+- [ ] Footer/Contato
 
 ## Cupom por e-mail
 

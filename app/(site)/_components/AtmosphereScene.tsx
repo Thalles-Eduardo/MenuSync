@@ -113,7 +113,7 @@ function LanternGlow({ pointer }: { pointer: Pointer }) {
       <spriteMaterial
         map={texture}
         transparent
-        opacity={0.32}
+        opacity={0.2}
         color="#ffcf8a"
         blending={THREE.AdditiveBlending}
         depthWrite={false}

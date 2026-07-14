@@ -153,7 +153,10 @@ export default function HeroShowcase({
     <section
       ref={scope}
       className="relative min-h-screen w-full overflow-x-hidden bg-cover bg-center text-white"
-      style={{ backgroundImage: "url('/bgHero.webp')" }}
+      style={{
+        backgroundColor: "var(--color-dark-blue)",
+        backgroundImage: "url('/bgHeroInk.webp')",
+      }}
       aria-label={`Prato em destaque: ${activeDish?.name}`}
     >
       <AtmosphereLayer />
@@ -171,7 +174,7 @@ export default function HeroShowcase({
         />
       </div>
 
-      <div className="static mt-8 px-8 pb-10 lg:absolute lg:bottom-10 lg:left-0 lg:right-[32%] lg:mt-0 lg:px-0 z-10">
+      <div className="static mt-8 px-8 pb-10 z-10 lg:absolute lg:bottom-10 lg:left-1/2 lg:-translate-x-1/2 lg:mt-0 lg:px-0">
         <DishCarousel
           dishes={dishes}
           activeId={activeDish.id}

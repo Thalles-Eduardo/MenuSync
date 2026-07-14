@@ -97,7 +97,7 @@ export default function HamburgerMenu() {
           line-height: 0;
         }
 
-        /* Hamburger (selfish-crab-56) */
+        
         .hamburger {
           cursor: pointer;
           display: inline-flex;

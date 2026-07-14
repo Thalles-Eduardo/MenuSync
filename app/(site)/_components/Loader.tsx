@@ -26,7 +26,7 @@ export default function Loader() {
       tl.fromTo(
         ".loader-word",
         { opacity: 0, scale: 0.55 },
-        { opacity: 1, scale: 1, duration: 1.2, ease: "power3.out" }
+        { opacity: 1, scale: 2, duration: 1.2, ease: "power3.out" }
       )
         // ...e só depois de terminar, o subtítulo aparece.
         .to(".loader-sub", { opacity: 1, duration: 0.6, ease: "power2.out" }, "+=0.15")
@@ -45,7 +45,7 @@ export default function Loader() {
       aria-hidden="true"
     >
       <span
-        className="loader-word text-5xl tracking-wide text-white opacity-0 md:text-7xl lg:text-8xl"
+        className="loader-word p-3 text-6xl tracking-wide text-white opacity-0 md:text-7xl lg:text-8xl"
         style={{
           fontFamily: "var(--font-ming), serif",
           textShadow:
@@ -55,7 +55,7 @@ export default function Loader() {
         MENU SYNC
       </span>
 
-      <span className="loader-sub mt-8 text-sm tracking-[0.25em] text-white/80 underline underline-offset-4 opacity-0">
+      <span className="loader-sub mt-8 text-[0.5rem] tracking-[0.25em] text-white/80 underline underline-offset-4 opacity-0">
         todos os direitos reservados Menu Sync©
       </span>
     </div>

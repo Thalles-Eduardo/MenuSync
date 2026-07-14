@@ -3,12 +3,9 @@
 import { useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { PLACE } from "./about/about-data";
 import Timeline from "./about/Timeline";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const RestaurantMap = dynamic(() => import("./about/RestaurantMap"), {
   ssr: false,
@@ -19,7 +16,7 @@ const RestaurantMap = dynamic(() => import("./about/RestaurantMap"), {
   ),
 });
 
-export default function AboutSection() {
+export default function AboutSection({ active = false }: { active?: boolean }) {
   const scope = useRef<HTMLElement>(null);
   const reduce = useMemo(
     () =>
@@ -27,12 +24,13 @@ export default function AboutSection() {
       window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     [],
   );
+  const played = useRef(false);
 
   useGSAP(
     () => {
-      if (reduce) return;
+      if (reduce || !active || played.current) return;
+      played.current = true;
       gsap.from(".about-reveal", {
-        scrollTrigger: { trigger: scope.current, start: "top 75%", once: true },
         y: 28,
         opacity: 0,
         duration: 0.7,
@@ -40,16 +38,16 @@ export default function AboutSection() {
         ease: "power3.out",
       });
     },
-    { scope },
+    { scope, dependencies: [reduce, active] },
   );
 
   return (
     <section
       ref={scope}
-      className="about-section relative overflow-hidden bg-cover bg-center bg-no-repeat px-8 py-24 text-white md:px-12 lg:py-28"
+      className="about-section relative flex min-h-screen flex-col justify-center overflow-hidden bg-cover bg-center bg-no-repeat px-8 py-10 text-white md:px-12 lg:py-12"
       style={{
         backgroundColor: "var(--color-dark-blue)",
-        backgroundImage: "url('/bgAbout.webp')",
+        backgroundImage: "url('/bgAboutInk.webp')",
       }}
       aria-label="Sobre o restaurante"
     >
@@ -59,7 +57,7 @@ export default function AboutSection() {
         aria-hidden="true"
       />
 
-      <div className="relative mx-auto max-w-6xl">
+      <div className="relative w-full">
         <p className="about-reveal text-sm font-semibold tracking-[0.25em] text-yellow uppercase">
           Nossa história
         </p>
@@ -70,7 +68,7 @@ export default function AboutSection() {
           Tradição japonesa em São Paulo
         </h2>
 
-        <div className="about-reveal mt-8 max-w-2xl space-y-4 text-white/80">
+        <div className="about-reveal mt-5 max-w-2xl space-y-3 text-white/80">
           <p>
             Desde 2009, na Liberdade, servimos a cozinha japonesa como um ritual: ingredientes
             frescos, técnica precisa e a hospitalidade de quem trata cada prato como uma
@@ -84,8 +82,8 @@ export default function AboutSection() {
 
         <Timeline />
 
-        <div className="mt-20 grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr]">
-          <div className="about-map-slot h-[360px] w-full overflow-hidden rounded-2xl border border-white/10 bg-black/40 md:h-[420px]">
+        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
+          <div className="about-map-slot h-[210px] w-full overflow-hidden rounded-2xl border border-white/10 bg-black/40 md:h-[240px]">
             <RestaurantMap />
           </div>
 
