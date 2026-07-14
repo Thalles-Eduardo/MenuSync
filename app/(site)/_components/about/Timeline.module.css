@@ -3,11 +3,11 @@
 
 .cardsContainer {
   --full-circle: 360deg;
-  --radius: 40vw;
+  --radius: 30vw;
   --duration: 200ms;
 
   --cards-container-size: calc(var(--radius) * 2);
-  --cards-container-padding: 2rem;
+  --cards-container-padding: 2.1rem;
 
   --border-color: rgba(255, 255, 255, 0.08);
 
@@ -30,24 +30,24 @@
   position: relative;
   width: var(--cards-container-size);
   height: var(--cards-container-size);
-  margin: 2rem auto calc(var(--radius) * -1 + 2rem);
+  margin: 1rem auto calc(var(--radius) * -1 + 2rem);
   padding: var(--cards-container-padding);
   clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
 }
 
 @media (min-width: 800px) {
   .cardsContainer {
-    --radius: 26vw;
+    --radius: 19vw;
     --label-size: 40px;
     --label-dot-size: 14px;
-    --label-line-h-current: 3.5rem;
-    --title-top: 3rem;
-    --info-top: 7rem;
+    --label-line-h-current: 3rem;
+    --title-top: 2.5rem;
+    --info-top: 6rem;
   }
 }
 @media (min-width: 1200px) {
   .cardsContainer {
-    --radius: 22vw;
+    --radius: 13vw;
     --label-size: 46px;
     --border-color: rgba(255, 255, 255, 0.12);
   }

@@ -103,7 +103,7 @@ export default function AddToCartButton() {
       ref={btnRef}
       type="button"
       onClick={handleClick}
-      className="relative inline-flex h-[52px] min-w-[170px] items-center justify-center overflow-hidden rounded-md bg-salmon px-5 font-semibold text-white transition hover:brightness-110"
+      className="relative cursor-pointer inline-flex h-[52px] min-w-[170px] items-center justify-center overflow-hidden rounded-md bg-salmon px-5 font-semibold text-white transition hover:brightness-110"
     >
       <span className="atc-idle inline-flex items-center gap-2">
         <CartIcon className="h-7 w-7" />

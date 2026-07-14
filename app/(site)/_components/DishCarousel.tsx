@@ -20,7 +20,7 @@ export default function DishCarousel({ dishes, activeId, onSelect }: Props) {
               className="group flex flex-col items-center gap-2"
             >
               <span
-                className={`overflow-hidden rounded-full border-2 transition duration-300 group-hover:scale-105 ${
+                className={`cursor-pointer overflow-hidden rounded-full border-2 transition duration-300 group-hover:scale-105 ${
                   isActive ? "border-salmon" : "border-white/40"
                 }`}
               >

@@ -47,7 +47,7 @@ function TabButton({
 
 export default function ReviewsPanel({ dish, activeTab, onTabChange }: Props) {
   return (
-    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-md">
+    <div className="rounded-3xl max-w-100 border border-white/20 bg-white/10 p-5 backdrop-blur-md">
       <div className="mb-4 flex gap-6 border-b border-white/15">
         <TabButton active={activeTab === "reviews"} onClick={() => onTabChange("reviews")}>
           Comentários
@@ -58,7 +58,7 @@ export default function ReviewsPanel({ dish, activeTab, onTabChange }: Props) {
       </div>
 
       {activeTab === "reviews" ? (
-        <ul className="flex max-h-[420px] flex-col gap-3 overflow-y-auto pr-1">
+        <ul className="flex max-h-105 flex-col gap-3 overflow-y-auto pr-1">
           {dish.reviews.map((review) => (
             <li key={review.author} className="review-card rounded-2xl bg-white/90 p-4 text-neutral-800">
               <div className="mb-2 flex items-center gap-3">
@@ -66,14 +66,14 @@ export default function ReviewsPanel({ dish, activeTab, onTabChange }: Props) {
                 <span className="flex-1 text-sm font-bold">{review.author}</span>
                 <Stars rating={review.rating} />
               </div>
-              <p className="text-xs leading-relaxed text-neutral-600">{review.text}</p>
+              <p className="text-xs font-sans font-bold leading-relaxed text-neutral-600">{review.text}</p>
             </li>
           ))}
         </ul>
       ) : (
         <ul className="flex flex-col gap-2">
           {dish.ingredients.map((ingredient) => (
-            <li key={ingredient} className="review-card rounded-xl bg-white/85 px-4 py-3 text-sm font-medium text-neutral-800">
+            <li key={ingredient} className="review-card font-sans rounded-xl bg-white/85 px-4 py-3 text-sm font-medium text-neutral-800">
               {ingredient}
             </li>
           ))}
