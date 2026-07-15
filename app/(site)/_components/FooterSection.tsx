@@ -90,6 +90,7 @@ export default function FooterSection({
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (status === "loading") return;
     const parsed = couponSchema.safeParse({ email });
     if (!parsed.success) {
       setStatus("error");
@@ -154,7 +155,7 @@ export default function FooterSection({
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
-              if (status !== "idle") setStatus("idle");
+              if (status === "error") setStatus("idle");
             }}
             aria-invalid={status === "error"}
             className="h-12 flex-1 rounded-xl border-0 bg-dark-blue/60 px-4 text-sm text-white shadow-[0_0_0_1.5px_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 outline-none placeholder:text-white/55 hover:shadow-[0_0_0_2px_rgba(227,165,107,0.5)] focus:shadow-[0_0_0_2px_rgba(227,199,123,0.9)]"
