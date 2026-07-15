@@ -9,6 +9,7 @@ import HeroShowcase from "./HeroShowcase";
 import MenuBento from "./MenuBento";
 import AboutSection from "./AboutSection";
 import ReservasCTA from "./ReservasCTA";
+import FooterSection from "./FooterSection";
 import SectionRoulette, { type RouletteItem } from "./SectionRoulette";
 
 const ITEMS: RouletteItem[] = [
@@ -16,6 +17,7 @@ const ITEMS: RouletteItem[] = [
   { id: "cardapio", label: "Cardápio" },
   { id: "sobre", label: "Sobre" },
   { id: "reservas", label: "Reservas" },
+  { id: "contato", label: "Contato" },
 ];
 
 export default function SectionStage({ dishes }: { dishes: Dish[] }) {
@@ -171,6 +173,11 @@ export default function SectionStage({ dishes }: { dishes: Dish[] }) {
         {/* Painel 3 — Reservas (CTA) */}
         <div className={panelClass}>
           <ReservasCTA active={activeIndex === 3} />
+        </div>
+
+        {/* Painel 4 — Contato (cupom + footer) */}
+        <div className={panelClass}>
+          <FooterSection active={activeIndex === 4} onNavigate={goTo} />
         </div>
       </div>
 
