@@ -40,7 +40,7 @@ function CheckIcon({ className }: { className?: string }) {
   );
 }
 
-export default function AddToCartButton() {
+export default function AddToCartButton({ compact = false }: { compact?: boolean }) {
   const btnRef = useRef<HTMLButtonElement>(null);
   const busy = useRef(false);
 
@@ -103,7 +103,9 @@ export default function AddToCartButton() {
       ref={btnRef}
       type="button"
       onClick={handleClick}
-      className="relative cursor-pointer inline-flex h-[52px] min-w-[170px] items-center justify-center overflow-hidden rounded-md bg-salmon px-5 font-semibold text-white transition hover:brightness-110"
+      className={`relative inline-flex cursor-pointer items-center justify-center overflow-hidden rounded-md bg-salmon font-semibold text-white transition hover:brightness-110 ${
+        compact ? "h-11 min-w-[132px] px-4 text-sm" : "h-[52px] min-w-[170px] px-5"
+      }`}
     >
       <span className="atc-idle inline-flex items-center gap-2">
         <CartIcon className="h-7 w-7" />
