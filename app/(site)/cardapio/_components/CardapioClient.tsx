@@ -23,13 +23,14 @@ export default function CardapioClient() {
   useGSAP(
     () => {
       if (reduce) return;
-      gsap.from(".menu-card", {
-        y: 24,
-        opacity: 0,
-        duration: 0.5,
-        stagger: 0.06,
-        ease: "power3.out",
-      });
+      // fromTo (não `from`) com estado final explícito: em React Strict Mode o
+      // efeito é invocado duas vezes no mount e um `from` leria a opacidade
+      // transitória (meio-revert) como destino, deixando os cards travados < 1.
+      gsap.fromTo(
+        ".menu-card",
+        { y: 24, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, stagger: 0.06, ease: "power3.out" },
+      );
     },
     { scope, dependencies: [active] },
   );
