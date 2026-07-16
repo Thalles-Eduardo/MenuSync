@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import type { Dish } from "../_data/dishes";
 import AddToCartButton from "./AddToCartButton";
 import SakuraCorners from "./SakuraCorners";
@@ -114,8 +115,8 @@ export default function MenuBento({
         ))}
 
         {/* Card CTA */}
-        <a
-          href="#"
+        <Link
+          href="/cardapio"
           className="bento-cta group flex flex-col justify-between gap-6 rounded-2xl border border-yellow/30 bg-gradient-to-br from-salmon/20 to-transparent p-6 transition hover:border-yellow/60"
         >
           <div className="flex flex-col gap-1">
@@ -140,7 +141,7 @@ export default function MenuBento({
             </svg>
             Explore
           </button>
-        </a>
+        </Link>
       </div>
     </section>
   );
