@@ -441,6 +441,12 @@ Logo após a linha `const otherDishes = dishes.filter((d) => d.id !== activeDish
     const id = params.get("section");
     if (id) {
       const i = ITEMS.findIndex((it) => it.id === id);
+      // Sincronização única com a URL no mount (deep-link vindo de /cardapio):
+      // é intencional e roda uma vez — não é um loop de renders em cascata.
+      // A regra react-hooks/set-state-in-effect é `error` neste projeto; o
+      // efeito é hydration-safe (server e client iniciam no índice 0, o salto
+      // só ocorre no client após a hidratação), então suprimimos pontualmente.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (i > 0) setActiveIndex(i);
     }
     if (params.has("section")) {

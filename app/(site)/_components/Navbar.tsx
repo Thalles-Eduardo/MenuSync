@@ -8,7 +8,7 @@ export default function Navbar({
   onSelectSection?: (index: number) => void;
 }) {
   return (
-    <nav className="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-6 py-6 md:px-12">
+    <nav className="fixed inset-x-0 top-0 z-[55] flex items-center justify-between px-6 py-6 md:px-12">
       <Link
         href="/"
         className="text-2xl font-semibold tracking-wide text-white transition hover:opacity-90 md:text-3xl"
