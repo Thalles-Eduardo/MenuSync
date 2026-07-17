@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { CATEGORIES, menu, type MenuCategory } from "../../_data/menu";
 import SakuraCorners from "../../_components/SakuraCorners";
-import MenuHeader from "./MenuHeader";
+import Navbar from "../../_components/Navbar";
 import MenuItemCard from "./MenuItemCard";
 
 export default function CardapioClient() {
@@ -38,7 +38,7 @@ export default function CardapioClient() {
   return (
     <div
       ref={scope}
-      className="relative min-h-screen overflow-hidden bg-cover bg-center bg-no-repeat px-8 py-10 text-white md:px-12"
+      className="relative min-h-screen overflow-hidden bg-cover bg-center bg-no-repeat px-8 pt-28 pb-10 text-white md:px-12"
       style={{
         backgroundColor: "var(--color-dark-blue)",
         backgroundImage: "url('/bgCardapioInk.webp')",
@@ -51,7 +51,7 @@ export default function CardapioClient() {
       />
 
       <div className="relative z-10">
-        <MenuHeader />
+        <Navbar />
 
         <div className="mt-10">
           <p className="text-sm font-semibold tracking-[0.25em] text-yellow uppercase">
