@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -11,6 +11,7 @@ import AboutSection from "./AboutSection";
 import ReservasCTA from "./ReservasCTA";
 import FooterSection from "./FooterSection";
 import SectionRoulette, { type RouletteItem } from "./SectionRoulette";
+import Navbar from "./Navbar";
 
 const ITEMS: RouletteItem[] = [
   { id: "inicio", label: "Início" },
@@ -25,6 +26,25 @@ export default function SectionStage({ dishes }: { dishes: Dish[] }) {
   const [activeDishId, setActiveDishId] = useState(dishes[0]?.id ?? "");
   const activeDish = dishes.find((d) => d.id === activeDishId) ?? dishes[0];
   const otherDishes = dishes.filter((d) => d.id !== activeDish.id);
+
+  // Deep-link: /?section=<id> abre a roleta já na seção certa (ex.: vindo de
+  // /cardapio pelo menu). Roda uma vez no mount; depois limpa a query para o
+  // refresh não re-saltar.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("section");
+    if (id) {
+      const i = ITEMS.findIndex((it) => it.id === id);
+      // Sincronização única com a URL no mount (deep-link vindo de /cardapio):
+      // é intencional e roda uma vez — não é um loop de renders em cascata.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (i > 0) setActiveIndex(i);
+    }
+    if (params.has("section")) {
+      history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
 
   const trackRef = useRef<HTMLDivElement>(null);
   const prevIndex = useRef(0);
@@ -146,6 +166,7 @@ export default function SectionStage({ dishes }: { dishes: Dish[] }) {
 
   return (
     <div className="stage-pin relative h-screen w-full overflow-hidden">
+      <Navbar onSelectSection={goTo} />
       <div ref={trackRef} className="flex h-full w-full flex-col">
         {/* Painel 0 — Início */}
         <div className={panelClass}>
