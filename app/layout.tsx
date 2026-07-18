@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Mina, Eczar } from "next/font/google";
 import "./globals.css";
 import localFont from "next/font/local";
+import RouteTransitionProvider from "./(site)/_components/RouteTransitionProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,7 +47,9 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${geistSans.variable} ${geistMono.variable} ${mina.variable} ${mingImperial.variable} ${eczar.variable} h-full antialiased` }
     >
-      <body suppressHydrationWarning={true} className= "min-h-full flex flex-col">{children}</body>
+      <body suppressHydrationWarning={true} className= "min-h-full flex flex-col">
+        <RouteTransitionProvider>{children}</RouteTransitionProvider>
+      </body>
     </html>
   );
 }
