@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import Link from "next/link";
+import TransitionLink from "./TransitionLink";
 
 type Item = {
   label: string;
@@ -120,10 +120,10 @@ export default function HamburgerMenu({
                 );
               }
               return (
-                <Link key={it.label} href={it.href} className="item" onClick={() => setOpen(false)}>
+                <TransitionLink key={it.label} href={it.href} className="item" onClick={() => setOpen(false)}>
                   {it.icon}
                   {it.label}
-                </Link>
+                </TransitionLink>
               );
             })}
           </div>
@@ -209,7 +209,7 @@ export default function HamburgerMenu({
           padding: 10px;
           overflow: hidden;
         }
-        .item {
+        .list :global(.item) {
           font-size: 15px;
           background: transparent;
           border: 2px solid transparent;
@@ -226,18 +226,18 @@ export default function HamburgerMenu({
           text-align: left;
           text-decoration: none;
         }
-        .item:hover,
-        .item:focus {
+        .list :global(.item):hover,
+        .list :global(.item):focus {
           border: 2px solid rgba(255, 255, 255, 0.12);
           color: #e7c9c9;
         }
-        .item:focus,
-        .item:active {
+        .list :global(.item):focus,
+        .list :global(.item):active {
           background: rgba(255, 255, 255, 0.06);
           outline: none;
           margin-left: 14px;
         }
-        .item::before {
+        .list :global(.item)::before {
           content: "";
           position: absolute;
           top: 5px;
@@ -249,18 +249,18 @@ export default function HamburgerMenu({
           opacity: 0;
           transition: 320ms;
         }
-        .item:focus::before,
-        .item:active::before {
+        .list :global(.item):focus::before,
+        .list :global(.item):active::before {
           opacity: 1;
         }
-        .item :global(svg) {
+        .list :global(svg) {
           width: 20px;
           height: 20px;
           flex: none;
         }
 
         /* Efeito "fuzzy": desfoca os outros itens ao passar o mouse em um */
-        .list:hover > :not(.item:hover) {
+        .list:hover > :global(.item:not(:hover)) {
           transition: 300ms;
           filter: blur(1.4px);
           transform: scale(0.96);
