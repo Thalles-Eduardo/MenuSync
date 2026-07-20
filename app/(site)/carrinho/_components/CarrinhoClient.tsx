@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import Image from "next/image";
 import Navbar from "../../_components/Navbar";
+import SakuraCorners from "../../_components/SakuraCorners";
 import TransitionLink from "../../_components/TransitionLink";
 import { useCart } from "../../_components/CartProvider";
 import { brl } from "../../_lib/price";
@@ -76,14 +77,19 @@ export default function CarrinhoClient() {
   return (
     <div
       ref={scope}
-      className="min-h-screen w-full text-white"
+      className="relative min-h-screen overflow-hidden bg-cover bg-center bg-no-repeat text-white"
       style={{
         backgroundColor: "var(--color-dark-blue)",
         backgroundImage: "url('/bgCardapioInk.webp')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
       }}
     >
+      {/* Mesmo tratamento de fundo do /cardapio, para as duas rotas serem irmãs. */}
+      <SakuraCorners active />
+      <div
+        className="pointer-events-none absolute inset-0 bg-dark-blue/70"
+        aria-hidden="true"
+      />
+
       <div className="relative z-10">
         <Navbar />
 
