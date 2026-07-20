@@ -33,6 +33,17 @@ const items: Item[] = [
     ),
   },
   {
+    label: "Carrinho",
+    href: "/carrinho",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M3 4h2l2.4 10.2a1 1 0 0 0 1 .8h7.4a1 1 0 0 0 1-.8L19 7H6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="9" cy="19" r="1.5" stroke="currentColor" strokeWidth="1.8" />
+        <circle cx="16" cy="19" r="1.5" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    ),
+  },
+  {
     label: "Reservas",
     href: "/?section=reservas",
     index: 3,
