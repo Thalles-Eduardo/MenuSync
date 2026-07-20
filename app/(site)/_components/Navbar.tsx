@@ -1,6 +1,7 @@
 import TransitionLink from "./TransitionLink";
 import HamburgerMenu from "./HamburgerMenu";
 import CartButton from "./CartButton";
+import Image from "next/image";
 
 export default function Navbar({
   onSelectSection,
@@ -8,13 +9,26 @@ export default function Navbar({
   onSelectSection?: (index: number) => void;
 }) {
   return (
-    <nav className="navbar-vt fixed inset-x-0 top-0 z-[55] flex items-center justify-between px-6 py-6 md:px-12">
+    // px-8 md:px-12 espelha a goteira lateral das paginas (/cardapio, /carrinho e
+    // as secoes da home). Com px-6 o logo ficava 8px a esquerda do conteudo no
+    // mobile, quebrando o alinhamento vertical da coluna.
+    <nav className="navbar-vt fixed inset-x-0 top-0 z-[55] flex items-center justify-between px-8 py-6 md:px-12">
       <TransitionLink
         href="/"
         className="text-2xl font-semibold tracking-wide text-white transition hover:opacity-90 md:text-3xl"
         style={{ fontFamily: "var(--font-eczar), serif" }}
       >
-        Menu<span className="text-salmon">Sync</span>
+        {/* O arquivo e 160x160. Com `h-20 w-25` (80x100) o logo era esticado 25%
+            na horizontal; `w-auto` preserva a proporcao. O width/height de 160
+            continua sendo o dobro do tamanho exibido, para nao borrar em telas 2x. */}
+        <Image
+          src="/logoMenuSync.webp"
+          width={160}
+          height={160}
+          alt="Logo MenuSync"
+          className="h-20 w-auto"
+          priority
+        />
       </TransitionLink>
 
       <div className="flex items-center gap-4 md:gap-6">
