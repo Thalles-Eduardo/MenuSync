@@ -18,7 +18,10 @@ export default function CardapioClient() {
   );
   const [active, setActive] = useState<MenuCategory>("sushi");
 
-  const items = useMemo(() => menu.filter((m) => m.category === active), [active]);
+  const items = useMemo(
+    () => menu.filter((m) => m.category === active),
+    [active],
+  );
 
   useGSAP(
     () => {
@@ -77,11 +80,15 @@ export default function CardapioClient() {
                       type="button"
                       onClick={() => setActive(c.id)}
                       aria-current={isActive ? "true" : undefined}
-                      className={`cursor-pointer whitespace-nowrap text-base transition-colors ${
-                        isActive
-                          ? "font-semibold text-yellow underline underline-offset-8"
-                          : "text-white/70 hover:text-caramel"
-                      }`}
+                      className={`relative cursor-pointer whitespace-nowrap pb-2 text-base transition-colors duration-300
+                        after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-full
+                        after:bg-yellow after:origin-left after:transition-transform after:duration-500 after:ease-out
+                        ${
+                          isActive
+                            ? "font-semibold text-yellow after:scale-x-100"
+                            : "text-white/70 hover:text-caramel after:scale-x-0"
+                        }
+                      `}
                     >
                       {c.label}
                     </button>
