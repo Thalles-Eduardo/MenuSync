@@ -28,11 +28,15 @@ Esta spec fecha as três pontas: cria o estado, liga os botões e entrega a pág
 1. **Escopo:** página `/carrinho` + **badge de contagem na navbar** (o ícone passa a
    navegar). Sem mini-drawer lateral.
 2. **Persistência:** `localStorage` — sobrevive a refresh e a fechar o navegador.
-3. **Finalização:** **confirmação local** — "Finalizar pedido" mostra sucesso na própria
-   página e limpa o carrinho, no mesmo espírito do form de cupom do footer, que já é
-   simulado.
-4. **Menu hambúrguer** ganha o item "Carrinho" (caminho claro no mobile).
-5. **`weight` dos pratos do hero** é resolvido pelo `id` contra o `menu.ts` (os 4 ids do
+3. **Finalização:** **confirmação local** — o painel de pagamento valida no cliente,
+   mostra sucesso na própria página e limpa o carrinho, no mesmo espírito do form de
+   cupom do footer, que já é simulado.
+4. **Referência visual:** `Cart-Page-Example.png` — fundo escuro, lista à esquerda com
+   linhas `imagem · nome · stepper · preço · ×` separadas por divisórias finas,
+   "← Continuar comprando" e subtotal em destaque no rodapé da lista, e um painel de
+   **detalhes de pagamento** à direita.
+5. **Menu hambúrguer** ganha o item "Carrinho" (caminho claro no mobile).
+6. **`weight` dos pratos do hero** é resolvido pelo `id` contra o `menu.ts` (os 4 ids do
    hero existem lá com o mesmo preço).
 
 ## Paleta e fontes
@@ -216,16 +220,38 @@ Estrutura espelhando o `CardapioClient`: fundo `backgroundColor: var(--color-dar
 `onSelectSection`), e `px-8 pt-28 pb-10 md:px-12` para compensar a navbar fixa.
 
 - **Cabeçalho:** kana `カート · Carrinho` (padrão do `メニュー · Cardápio`) + h1 em Eczar.
-- **Layout:** `lg:grid-cols-3` — lista ocupando 2 colunas, resumo `lg:sticky lg:top-28`
-  na terceira. Empilha no mobile.
-- **Linha do carrinho** (`.cart-line`): `next/image` do produto, nome, `weight`, stepper
-  `− quantidade +`, total da linha, e botão remover com `aria-label="Remover {nome}"`.
+- **Layout:** `lg:grid-cols-3` — lista ocupando 2 colunas, painel de pagamento
+  `lg:sticky lg:top-28` na terceira. Empilha no mobile, painel por último.
+- **Linha do carrinho** (`.cart-line`), seguindo a referência da esquerda para a direita:
+  `next/image` do produto (quadrado com cantos arredondados), nome + `weight` abaixo em
+  menor, stepper `− [qtd] +`, total da linha, e um `×` para remover com
+  `aria-label="Remover {nome}"`. Divisória `border-b border-white/10` entre linhas.
   Preço unitário riscado quando houver desconto, seguindo o `MenuItemCard`.
-- **Resumo:** Subtotal → Desconto (em `text-yellow`, só se `> 0`) → Total, e o botão
-  "Finalizar pedido".
-- **Finalizar:** troca o card por um estado de sucesso (ex.: "Pedido enviado!") e chama
-  `clear()`. Sem backend, sem rota nova.
-- **Vazio:** mensagem + `TransitionLink href="/cardapio"` ("Ver o cardápio").
+- **Rodapé da lista:** `← Continuar comprando` (`TransitionLink` para `/cardapio`) à
+  esquerda e, à direita, `Subtotal:` discreto seguido do valor em destaque — como na
+  referência. Desconto (em `text-yellow`) só aparece se `> 0`.
+- **Vazio:** mensagem + `TransitionLink href="/cardapio"` ("Ver o cardápio"). O painel de
+  pagamento não é renderizado.
+
+### Painel de pagamento
+
+Espelha o "Card Details" da referência: título, bandeira, **Nome no cartão**, **Número
+do cartão**, **Validade (mm/aaaa)**, **CVV**, e o botão de finalizar ocupando a largura
+toda (o "Check Out" azul vira `bg-yellow text-dark-blue`, a cor de CTA do projeto).
+
+**É uma simulação, e a spec trata isso como requisito, não detalhe:**
+
+- Os campos vivem em `useState` **local do painel** — nunca entram no `CartProvider` e
+  portanto **nunca são gravados no `localStorage`**. Como o carrinho já persiste, essa
+  separação é explícita para não vazar dado de cartão para o storage por acidente.
+- **Nada é transmitido** — não há backend nem `fetch`. O submit só valida e troca de
+  estado.
+- `autoComplete="off"` nos campos de cartão, e um aviso curto e visível no painel de que
+  é uma demonstração e nenhum pagamento é processado.
+- Validação apenas de formato para dar feedback de UI (número com 16 dígitos, validade
+  no futuro, CVV com 3), com máscara de dígitos no input do número.
+- **Finalizar:** troca o painel por um estado de sucesso (`role="status"`, ex.: "Pedido
+  enviado!") e chama `clear()`. Sem backend, sem rota nova.
 - **Antes da hidratação** (`!hydrated`): renderiza um esqueleto neutro, não o estado
   vazio — senão quem tem itens salvos vê "carrinho vazio" piscar.
 - **Entrada:** `gsap.fromTo(".cart-line", { y: 24, opacity: 0 }, { y: 0, opacity: 1,
@@ -256,6 +282,9 @@ persistência remota · mini-drawer lateral · sincronizar carrinho entre abas
    - `−` no 1 remove a linha; remover tudo mostra o estado vazio
    - **F5 na `/carrinho`** com itens → o carrinho persiste e o badge volta correto
      (regressão de hidratação)
-   - "Finalizar pedido" → sucesso + carrinho zerado + badge some
-4. Conferir no DevTools que **não há warning de hydration mismatch** no console.
-5. Rodar com `prefers-reduced-motion: reduce` — sem animação de entrada, tudo funcional.
+   - preencher o painel de pagamento e finalizar → sucesso + carrinho zerado + badge some
+4. **Conferir que nenhum dado de cartão foi para o storage:** após preencher o painel,
+   inspecionar `localStorage.getItem("menusync:cart")` e confirmar que contém apenas
+   linhas do carrinho — sem campos de cartão. Regressão que a spec existe para prevenir.
+5. Conferir no DevTools que **não há warning de hydration mismatch** no console.
+6. Rodar com `prefers-reduced-motion: reduce` — sem animação de entrada, tudo funcional.
