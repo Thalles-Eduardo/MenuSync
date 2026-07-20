@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Mina, Eczar } from "next/font/google";
 import "./globals.css";
 import localFont from "next/font/local";
 import RouteTransitionProvider from "./(site)/_components/RouteTransitionProvider";
+import CartProvider from "./(site)/_components/CartProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,7 +49,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${mina.variable} ${mingImperial.variable} ${eczar.variable} h-full antialiased` }
     >
       <body suppressHydrationWarning={true} className= "min-h-full flex flex-col">
-        <RouteTransitionProvider>{children}</RouteTransitionProvider>
+        <CartProvider>
+          <RouteTransitionProvider>{children}</RouteTransitionProvider>
+        </CartProvider>
       </body>
     </html>
   );
