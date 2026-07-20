@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Navbar from "../../_components/Navbar";
 import TransitionLink from "../../_components/TransitionLink";
 import { useCart } from "../../_components/CartProvider";
 import { brl } from "../../_lib/price";
+import PagamentoPanel from "./PagamentoPanel";
 
 function Stepper({
   quantity,
@@ -44,7 +46,8 @@ function Stepper({
 }
 
 export default function CarrinhoClient() {
-  const { items, hydrated, desconto, total, setQty, remove } = useCart();
+  const { items, hydrated, desconto, total, setQty, remove, clear } = useCart();
+  const [enviado, setEnviado] = useState(false);
 
   return (
     <div
@@ -75,6 +78,26 @@ export default function CarrinhoClient() {
               {[0, 1, 2].map((i) => (
                 <div key={i} className="h-24 animate-pulse rounded-xl bg-white/5" />
               ))}
+            </div>
+          ) : enviado ? (
+            /* Vem ANTES do ramo de carrinho vazio: clear() esvazia a lista, então
+               a ordem inversa faria o sucesso cair no estado vazio. */
+            <div role="status" className="mt-16 flex flex-col items-start gap-6">
+              <h2
+                className="text-3xl font-bold text-yellow"
+                style={{ fontFamily: "var(--font-eczar), serif" }}
+              >
+                Pedido enviado!
+              </h2>
+              <p className="text-white/70">
+                Obrigado. Em breve você recebe a confirmação por e-mail.
+              </p>
+              <TransitionLink
+                href="/cardapio"
+                className="rounded-xl bg-yellow px-6 py-3 font-semibold text-dark-blue transition hover:brightness-105"
+              >
+                Voltar ao cardápio
+              </TransitionLink>
             </div>
           ) : items.length === 0 ? (
             <div className="mt-16 flex flex-col items-start gap-6">
@@ -169,7 +192,13 @@ export default function CarrinhoClient() {
                 </div>
               </section>
 
-              {/* Painel de pagamento entra na Task 9 */}
+              <PagamentoPanel
+                total={total}
+                onConfirm={() => {
+                  setEnviado(true);
+                  clear();
+                }}
+              />
             </div>
           )}
         </main>
