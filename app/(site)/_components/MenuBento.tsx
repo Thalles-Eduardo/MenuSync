@@ -5,11 +5,7 @@ import TransitionLink from "./TransitionLink";
 import type { Dish } from "../_data/dishes";
 import AddToCartButton from "./AddToCartButton";
 import SakuraCorners from "./SakuraCorners";
-
-const brl = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-});
+import { brl } from "../_lib/price";
 
 function DishCard({ dish }: { dish: Dish }) {
   return (

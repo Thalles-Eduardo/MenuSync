@@ -1,8 +1,7 @@
 import type { Dish } from "../_data/dishes";
 import AddToCartButton from "./AddToCartButton";
 import PlayVideoButton from "./PlayVideoButton";
-
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+import { brl } from "../_lib/price";
 
 export default function HeroText({ dish }: { dish: Dish }) {
   return (

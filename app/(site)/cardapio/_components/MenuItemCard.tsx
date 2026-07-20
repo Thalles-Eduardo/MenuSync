@@ -1,17 +1,11 @@
 import Image from "next/image";
 import type { MenuItem } from "../../_data/menu";
 import AddToCartButton from "../../_components/AddToCartButton";
-
-const brl = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-});
+import { brl, precoFinal, temDesconto } from "../../_lib/price";
 
 export default function MenuItemCard({ item }: { item: MenuItem }) {
-  const hasDiscount = typeof item.discount === "number" && item.discount > 0;
-  const finalPrice = hasDiscount
-    ? item.price * (1 - item.discount! / 100)
-    : item.price;
+  const hasDiscount = temDesconto(item);
+  const finalPrice = precoFinal(item);
 
   return (
     <article className="menu-card group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-sm transition hover:bg-white/[0.07]">
