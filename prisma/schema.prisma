@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// A URL de conexao fica em prisma.config.ts — no Prisma 7 a propriedade `url`
+// nao e mais aceita aqui.
+datasource db {
+  provider = "postgresql"
+}
+
+enum CouponStatus {
+  ACTIVE
+  USED
+  EXPIRED
+}
+
+model Coupon {
+  id String @id @default(cuid())
+
+  // @unique no email e a UNICA garantia do "um cupom por e-mail". Checar com
+  // findFirst antes do create teria janela de corrida: duas requisicoes
+  // simultaneas passariam pelas duas checagens. A constraint do banco nao tem
+  // essa janela — o codigo captura o P2002 e devolve o cupom que ja existe.
+  email String @unique
+
+  code   String       @unique
+  status CouponStatus @default(ACTIVE)
+
+  // Cobre a "validade" do README; gravado como criacao + 30 dias.
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("coupons")
+}
