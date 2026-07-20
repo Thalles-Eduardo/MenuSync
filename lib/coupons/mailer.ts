@@ -120,4 +120,14 @@ export class EnviadorResend implements EnviadorDeCupom {
   }
 }
 
-export const enviadorPadrao: EnviadorDeCupom = new EnviadorResend();
+// Seam de injecao: o handler pede o enviador em vez de instanciar o da Resend
+// direto, para a suite de integracao trocar por um stub e nao gastar cota real.
+let enviadorAtual: EnviadorDeCupom = new EnviadorResend();
+
+export function obterEnviador(): EnviadorDeCupom {
+  return enviadorAtual;
+}
+
+export function definirEnviador(enviador: EnviadorDeCupom): void {
+  enviadorAtual = enviador;
+}
