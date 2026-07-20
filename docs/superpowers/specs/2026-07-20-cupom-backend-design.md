@@ -1,4 +1,4 @@
-# Spec — Cupom por e-mail: backend real (API + Postgres + MailerSend)
+# Spec — Cupom por e-mail: backend real (API + Postgres + Resend)
 
 **Data:** 2026-07-20
 **Branch:** `feat/sakura-cardapio`
@@ -28,8 +28,21 @@ infraestrutura da Fase 04 — que as features seguintes (pedidos, reservas) reap
 | Decisão | Escolha |
 |---|---|
 | Persistência | Docker + Postgres + Prisma (Fase 04 de verdade) |
-| Envio | **MailerSend** (`POST https://api.mailersend.com/v1/email`) |
+| Envio | **Resend** (`POST https://api.resend.com/emails`), em **modo sandbox** |
 | Resposta a e-mail já cadastrado | **Genérica** — não revela se o e-mail está na base |
+
+### Por que sandbox, e o que ele custa
+
+O projeto vive apenas no repositório do autor, sem deploy público — nenhum visitante
+real vai preencher o formulário. Nesse cenário o sandbox da Resend
+(`onboarding@resend.dev`) dispensa comprar e verificar um domínio.
+
+O custo, que precisa estar documentado para não parecer defeito depois: a Resend
+**só entrega para o e-mail dono da conta**. Qualquer outro destinatário é recusado,
+o `EnviadorResend` levanta `ErroDeEnvio` e a rota responde `502 SEND_FAILED` — com o
+cupom **já persistido**, porque a gravação acontece antes do envio. Para entregar a
+endereços quaisquer é preciso verificar um domínio no painel e trocar o
+`COUPON_FROM_EMAIL`; nada de código muda.
 
 ## Consequência da resposta genérica: o código sai da tela
 
@@ -123,7 +136,7 @@ Isso está documentado no código, não escondido.
 
 **Novos — infra**
 - `docker-compose.yml` — `postgres:17-alpine`, volume nomeado, healthcheck
-- `.env.example` — template commitado (`DATABASE_URL`, `MAILERSEND_API_KEY`,
+- `.env.example` — template commitado (`DATABASE_URL`, `RESEND_API_KEY`,
   `COUPON_FROM_EMAIL`, `COUPON_FROM_NAME`)
 - `prisma/schema.prisma` + `prisma/migrations/`
 
@@ -133,10 +146,11 @@ Isso está documentado no código, não escondido.
 - `lib/rate-limit.ts` — janela fixa em memória
 - `lib/coupons/code.ts` — geração com `crypto.randomInt`
 - `lib/coupons/service.ts` — criar-ou-recuperar + orquestração do envio
-- `lib/coupons/mailer.ts` — adaptador MailerSend atrás de uma interface
-  (`fetch` direto, sem SDK). Sucesso é **202 com corpo vazio**, `to` é **array**
-  de objetos, auth em `Authorization: Bearer`, e há timeout de 10s para um
-  provedor lento não segurar a requisição do usuário.
+- `lib/coupons/mailer.ts` — adaptador Resend atrás de uma interface (`fetch`
+  direto, sem SDK). Sucesso é **200 com `{ id }`**, verificado por **status** e não
+  pela presença do `id` — um 4xx também devolve JSON, e confiar no corpo faria um
+  envio recusado passar por bem-sucedido. Auth em `Authorization: Bearer`, e há
+  timeout de 10s para um provedor lento não segurar a requisição do usuário.
 - `app/api/coupons/route.ts` — handler POST
 
 `lib/` no topo (não `app/(site)/_lib/`, que é escopo de UI) — é a pasta que o próprio
@@ -178,8 +192,8 @@ abaixo é um script, não testes de verdade. Vitest é o próximo passo natural.
      (é o teste que prova constraint em vez de check-then-insert)
 5. CDP (1440×900): home → painel Contato → submit → mensagem genérica de sucesso e
    **nenhum código na tela**; e-mail inválido → erro
-6. Envio real: com `MAILERSEND_API_KEY` no `.env` e o domínio do remetente
-   verificado na MailerSend, um e-mail de verdade chega à caixa
+6. Envio real: com `RESEND_API_KEY` no `.env`, um e-mail de verdade chega à caixa
+   — no **sandbox**, obrigatoriamente à caixa do e-mail dono da conta Resend
 
 ## Fora de escopo
 

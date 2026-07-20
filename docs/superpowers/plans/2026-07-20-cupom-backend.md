@@ -21,7 +21,7 @@ Regras gerais para quem executar:
 - `.env.example` commitado:
   ```
   DATABASE_URL="postgresql://menusync:menusync@localhost:5432/menusync?schema=public"
-  MAILERSEND_API_KEY=""
+  RESEND_API_KEY=""
   COUPON_FROM_EMAIL="cupom@seudominio.com"
   COUPON_FROM_NAME="MenuSync"
   ```
@@ -41,7 +41,7 @@ Regras gerais para quem executar:
 
 ## Task 3 — `lib/env.ts`
 
-- Schema Zod: `DATABASE_URL` url obrigatória; `MAILERSEND_API_KEY` string mín. 1;
+- Schema Zod: `DATABASE_URL` url obrigatória; `RESEND_API_KEY` string mín. 1;
   `COUPON_FROM_EMAIL` e-mail válido; `COUPON_FROM_NAME` com default `"MenuSync"`.
 - Exportar `getEnv()` que valida na primeira chamada e cacheia o resultado.
   **Não** validar no escopo do módulo — quebraria `npm run build` sem `.env`
@@ -66,13 +66,15 @@ Regras gerais para quem executar:
   é forjável sem proxy confiável) — declarada, não escondida.
 - **Verificar:** unitariamente — 5 passam, a 6ª é bloqueada, e após a janela libera.
 
-## Task 6 — Mailer (MailerSend)
+## Task 6 — Mailer (Resend)
 
-- `lib/coupons/mailer.ts`: interface `EnviadorDeCupom` + implementação MailerSend
+- `lib/coupons/mailer.ts`: interface `EnviadorDeCupom` + implementação Resend
   via `fetch` (sem SDK — o contrato é um POST JSON simples).
-- `POST https://api.mailersend.com/v1/email`, `Authorization: Bearer <token>`.
-  Sucesso é **202 Accepted com corpo vazio** — não tente `.json()` no sucesso.
-  `to` é **array** de `{ email }`. Timeout de 10s via `AbortSignal.timeout`.
+- `POST https://api.resend.com/emails`, `Authorization: Bearer <chave>`.
+  Sucesso é **200 com `{ id }`**; checar por **status**, não pela presença do `id`
+  (um 4xx também devolve JSON, e confiar no corpo faria envio recusado passar por
+  bem-sucedido). `from` aceita `"Nome <email>"`. Timeout de 10s via
+  `AbortSignal.timeout`.
 - Assunto/corpo em pt-BR com o código e a validade. HTML simples, sem imagem externa.
 - **Nunca** logar o e-mail inteiro nem o código; helper de redação
   (`f***@dominio.com`) para os logs.
@@ -133,9 +135,13 @@ Regras gerais para quem executar:
 
 ## Task 11 — Envio real + README
 
-- Com `MAILERSEND_API_KEY` real no `.env` e o domínio do remetente verificado no
-  painel da MailerSend (o usuário fornece os dois), disparar um envio de verdade e
-  confirmar a chegada. Sem o domínio verificado a API devolve 422 `#MS42207`.
+- Com `RESEND_API_KEY` real no `.env` (o usuário fornece), disparar um envio de
+  verdade e confirmar a chegada.
+- **Modo sandbox** (decisão do usuário: o projeto vive só no repositório dele, sem
+  deploy público). `COUPON_FROM_EMAIL=onboarding@resend.dev` dispensa verificar
+  domínio, mas a Resend **só entrega para o e-mail dono da conta** — o teste real
+  precisa usar esse endereço. Documentar isso no README e no `mailer.ts`, senão
+  o `502` para qualquer outro destinatário parece defeito.
 - `README.md` — marcar **só** o que foi entregue:
   - Fase 03, regras do cupom: marcar "Um cupom por e-mail" e "Rate limit anti-abuso";
     marcar "Cupom com código, validade e status".
