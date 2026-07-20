@@ -37,6 +37,81 @@ Desenvolver o site de um restaurante japonês com uma home moderna e interativa,
 
 ---
 
+# ▶️ Como rodar
+
+## Pré-requisitos
+
+- **Node 20+**
+- **Docker** (com Docker Compose) — sobe o Postgres
+
+## 1. Variáveis de ambiente
+
+```bash
+cp .env.example .env
+```
+
+O que preencher no `.env`:
+
+| Variável | O que é |
+|---|---|
+| `DATABASE_URL` | Já vem pronta para o Postgres do `docker-compose.yml`. Só mude a porta se você tiver mudado `POSTGRES_PORT`. |
+| `RESEND_API_KEY` | **Precisa ser preenchida.** Pegue no painel da [Resend](https://resend.com) em _API Keys_. |
+| `COUPON_FROM_EMAIL` | Remetente. O padrão `onboarding@resend.dev` funciona sem verificar domínio — veja a nota de sandbox abaixo. |
+| `COUPON_FROM_NAME` | Nome de exibição do remetente. |
+
+**Sem `RESEND_API_KEY` o app inteiro continua funcionando** — home, cardápio,
+carrinho, banco. O que quebra é apenas o envio do cupom: `POST /api/coupons`
+grava a linha e responde `502 SEND_FAILED` na hora de chamar o provedor.
+
+## 2. Banco
+
+```bash
+docker compose up -d
+```
+
+Sobe o `postgres:17-alpine` com volume nomeado e healthcheck. A porta do **host**
+é `5432` por padrão; se ela já estiver ocupada por outro Postgres na sua máquina,
+defina `POSTGRES_PORT` no `.env` (ex.: `POSTGRES_PORT=5434`) **e reflita a mesma
+porta na `DATABASE_URL`** — o compose lê essa variável, mas a URL não é derivada
+dela automaticamente.
+
+## 3. Dependências e migrations
+
+```bash
+npm install
+npx prisma migrate dev
+```
+
+O `npm install` já roda `prisma generate` no `postinstall`. O `migrate dev` cria
+o schema e aplica as migrations de `prisma/migrations/`.
+
+## 4. Subir a aplicação
+
+```bash
+npm run dev
+```
+
+Disponível em `http://localhost:3000`.
+
+## 5. Testes
+
+```bash
+npm test          # roda uma vez
+npm run test:watch
+```
+
+Os testes de integração do cupom batem no **Postgres real**, então exigem o
+container do passo 2 no ar e o `.env` com `DATABASE_URL` válida. Eles rodam em
+série e limpam apenas as linhas do próprio domínio de teste (`@vitest.local`),
+sem tocar nos demais dados. O envio de e-mail é sempre substituído por um stub —
+nenhum teste chama a Resend.
+
+> **Nota — modo sandbox da Resend.** O remetente padrão só entrega para o e-mail
+> dono da conta; qualquer outro destinatário volta como erro. Os detalhes e como
+> sair disso estão na nota da seção **Cupom por e-mail** (Fase 03).
+
+---
+
 # 📁 Estrutura do Projeto
 
 ```
