@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { consumirCota } from "@/lib/rate-limit";
-import { criarOuRecuperarCupom } from "@/lib/coupons/service";
+import { criarOuRecuperarCupom, normalizarEmail } from "@/lib/coupons/service";
 import { ErroDeEnvio, obterEnviador, redigirEmail } from "@/lib/coupons/mailer";
 
 // O handler usa node:crypto e o Prisma, que nao rodam no runtime edge.
@@ -12,8 +12,26 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const corpoEsperado = z.object({
-  email: z.email({ message: "Informe um e-mail valido." }),
+  // `.trim()` antes do `.email()`: sem ele um endereco colado com espaco em volta
+  // era rejeitado com 400, e o trim() de normalizarEmail() nunca chegava a rodar.
+  // O `.max(254)` e o limite de endereco do RFC 5321: sem ele um local-part de
+  // milhares de caracteres era aceito e virava linha no banco, e como cada string
+  // distinta e uma linha nova isso e vetor de inchaco da tabela.
+  email: z
+    .string()
+    .trim()
+    .max(254, { message: "Informe um e-mail valido." })
+    .pipe(z.email({ message: "Informe um e-mail valido." })),
 });
+
+// Cota por IP: freio geral de abuso.
+const COTA_POR_IP = { limite: 5, janelaMs: 10 * 60 * 1000 };
+// Cota por e-mail de DESTINO, que e uma dimensao diferente da anterior. Sem ela o
+// dedupe garante um unico cupom, mas o ENVIO se repete a cada requisicao: alguem
+// com varios IPs dispararia N e-mails para a caixa de uma vitima usando a nossa
+// infra (e queimando cota do provedor). O limite por IP nao cobre isso justamente
+// porque o atacante troca de IP.
+const COTA_POR_EMAIL = { limite: 3, janelaMs: 60 * 60 * 1000 };
 
 type CodigoDeErro = "RATE_LIMITED" | "INVALID_EMAIL" | "SEND_FAILED" | "INTERNAL";
 
@@ -39,7 +57,10 @@ export async function POST(request: Request) {
   try {
     // 1. Rate limit vem ANTES de qualquer parse: quem esta em flood nao deve
     //    conseguir nos fazer gastar CPU de validacao nem round-trip de banco.
-    const cota = consumirCota(identificarCliente(request));
+    //    As chaves sao prefixadas por dimensao: sem o prefixo, um cliente mandaria
+    //    `x-forwarded-for: alvo@exemplo.com` e gastaria a cota de e-mail da vitima,
+    //    trocando um vetor de abuso por outro.
+    const cota = consumirCota(`ip:${identificarCliente(request)}`, COTA_POR_IP);
     if (!cota.permitido) {
       return erro(
         "RATE_LIMITED",
@@ -62,11 +83,25 @@ export async function POST(request: Request) {
       return erro("INVALID_EMAIL", "Informe um e-mail valido.", 400);
     }
 
-    // 3. Servico: cria ou recupera. Os dois ramos seguem identicos daqui pra
-    //    frente — jaExistia so vira log.
-    const { coupon, jaExistia } = await criarOuRecuperarCupom(analisado.data.email);
+    // 3. Cota por destinatario. Normalizamos aqui para a chave ser a mesma que o
+    //    servico vai gravar — senao trocar a caixa de uma letra ja daria uma cota
+    //    nova para o mesmo endereco. A resposta e o mesmo 429 do limite por IP,
+    //    para nao revelar QUAL das duas cotas estourou.
+    const emailNormalizado = normalizarEmail(analisado.data.email);
+    const cotaDoEmail = consumirCota(`email:${emailNormalizado}`, COTA_POR_EMAIL);
+    if (!cotaDoEmail.permitido) {
+      return erro(
+        "RATE_LIMITED",
+        "Muitas tentativas. Tente de novo em alguns minutos.",
+        429,
+      );
+    }
 
-    // 4. Envio. Reenviar o MESMO codigo e idempotente de proposito: uma nova
+    // 4. Servico: cria ou recupera. Os dois ramos seguem identicos daqui pra
+    //    frente — jaExistia so vira log.
+    const { coupon, jaExistia } = await criarOuRecuperarCupom(emailNormalizado);
+
+    // 5. Envio. Reenviar o MESMO codigo e idempotente de proposito: uma nova
     //    tentativa do usuario nao gera um segundo cupom.
     try {
       await obterEnviador().enviar({
@@ -91,7 +126,7 @@ export async function POST(request: Request) {
       `[coupons] ok para ${redigirEmail(coupon.email)} (ja existia: ${jaExistia})`,
     );
 
-    // 5. Sucesso SEMPRE igual: 200 { ok: true }, sem o codigo (ele so existe no
+    // 6. Sucesso SEMPRE igual: 200 { ok: true }, sem o codigo (ele so existe no
     //    e-mail, senao bastaria digitar o endereco de outra pessoa para ganhar
     //    um cupom) e sem nenhum sinal de que o e-mail ja estava na base.
     return NextResponse.json({ ok: true }, { status: 200 });
