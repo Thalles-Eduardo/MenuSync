@@ -37,12 +37,16 @@ const couponSchema = z.object({
   email: z.string().min(1, "Informe seu e-mail").email("E-mail inválido"),
 });
 
-function makeCoupon() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let s = "";
-  for (let i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)];
-  return `SAKURA10-${s}`;
-}
+// O código do cupom NÃO aparece mais na tela: ele é gerado no servidor e só chega
+// por e-mail. Se a API devolvesse o código no corpo, bastaria digitar o endereço de
+// outra pessoa para ganhar um cupom válido sem provar acesso àquela caixa.
+const MSG_SUCESSO =
+  "Pronto! Se estiver tudo certo com o e-mail, o cupom já está a caminho da sua caixa de entrada.";
+const MSG_EMAIL_INVALIDO = "E-mail inválido";
+const MSG_MUITAS_TENTATIVAS = "Muitas tentativas. Tente de novo em alguns minutos.";
+// Erro genérico de propósito: 5xx e falha de rede não devem vazar detalhe técnico
+// para a tela — o servidor já loga o `ref` que o suporte precisa.
+const MSG_ERRO_GENERICO = "Não foi possível concluir agora. Tente de novo em instantes.";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -65,7 +69,6 @@ export default function FooterSection({
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
-  const [coupon, setCoupon] = useState<string | null>(null);
 
   useGSAP(
     () => {
@@ -91,20 +94,43 @@ export default function FooterSection({
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (status === "loading") return;
+    // Validação client-side só para feedback imediato (evita um round-trip óbvio).
+    // A validação que vale é a do servidor — esta aqui é contornável.
     const parsed = couponSchema.safeParse({ email });
     if (!parsed.success) {
       setStatus("error");
-      setCoupon(null);
-      setMessage(parsed.error.issues[0]?.message ?? "E-mail inválido");
+      setMessage(parsed.error.issues[0]?.message ?? MSG_EMAIL_INVALIDO);
       return;
     }
+
     setStatus("loading");
     setMessage("");
-    // TODO(backend): trocar por POST /api/coupons (gera/persiste cupom + envia e-mail)
-    await new Promise((r) => setTimeout(r, 700));
-    setCoupon(makeCoupon());
-    setStatus("success");
-    setMessage("Cupom gerado! Use no checkout — enviamos uma cópia para o seu e-mail.");
+
+    try {
+      const resposta = await fetch("/api/coupons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: parsed.data.email }),
+      });
+
+      if (resposta.ok) {
+        setStatus("success");
+        setMessage(MSG_SUCESSO);
+        // Limpa o campo para não parecer que o envio ficou pendente.
+        setEmail("");
+        return;
+      }
+
+      setStatus("error");
+      if (resposta.status === 429) setMessage(MSG_MUITAS_TENTATIVAS);
+      else if (resposta.status === 400) setMessage(MSG_EMAIL_INVALIDO);
+      else setMessage(MSG_ERRO_GENERICO);
+    } catch {
+      // Falha de rede (offline, DNS, CORS). Sem este catch a promise rejeitada
+      // deixaria o botão preso em "Enviando…" para sempre.
+      setStatus("error");
+      setMessage(MSG_ERRO_GENERICO);
+    }
   }
 
   return (
@@ -155,7 +181,12 @@ export default function FooterSection({
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
-              if (status === "error") setStatus("idle");
+              // Digitar de novo limpa o feedback anterior: manter "sucesso" na tela
+              // enquanto o usuário edita outro e-mail seria informação errada.
+              if (status !== "idle" && status !== "loading") {
+                setStatus("idle");
+                setMessage("");
+              }
             }}
             aria-invalid={status === "error"}
             className="h-12 flex-1 rounded-xl border-0 bg-dark-blue/60 px-4 text-sm text-white shadow-[0_0_0_1.5px_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 outline-none placeholder:text-white/55 hover:shadow-[0_0_0_2px_rgba(227,165,107,0.5)] focus:shadow-[0_0_0_2px_rgba(227,199,123,0.9)]"
@@ -170,11 +201,20 @@ export default function FooterSection({
           </button>
         </form>
 
-        <div className="footer-reveal mt-3 min-h-[1.5rem] text-sm" aria-live="polite">
-          {status === "error" && <span className="text-salmon">{message}</span>}
+        {/* O fundo aqui é uma foto de tinta (marrom ~#564a43 nesta faixa), não o
+            dark-blue do token — medido, o texto de feedback ficava em 2.7:1. A
+            tarja opaca fixa o fundo efetivo em ~#303239 e torna o contraste
+            determinístico (5.3:1), em vez de depender de onde as manchas da
+            imagem caem quando a bg-cover é reescalada. */}
+        <div className="footer-reveal mt-3 min-h-[2rem] text-sm" aria-live="polite">
+          {status === "error" && (
+            <span className="inline-block rounded-xl bg-dark-blue/85 px-3 py-1 text-salmon-soft">
+              {message}
+            </span>
+          )}
           {status === "success" && (
-            <span className="text-green">
-              <strong className="font-semibold text-yellow">{coupon}</strong> — {message}
+            <span className="inline-block rounded-xl bg-dark-blue/85 px-3 py-1 text-green-soft">
+              {message}
             </span>
           )}
         </div>

@@ -13,6 +13,16 @@
   --color-green: #96875a;
   --color-dark-blue: #2A2E37;
 
+  /* Variantes claras para o texto de feedback do cupom (FooterSection).
+     Medido no render real, não estimado: o fundo do rodapé é uma foto de tinta,
+     e sob a linha de feedback ele é marrom (~#564a43), não o dark-blue do token.
+     Ali salmon (#e36b6b) dava 2.72:1 e green (#96875a) 2.44:1 — bem abaixo do
+     mínimo de 4.5:1 da WCAG AA para texto de corpo. A correção tem duas partes:
+     estes tons mais claros + a tarja opaca no próprio texto, que fixa o fundo
+     efetivo em ~#303239. Resultado medido: 5.29:1 e 5.61:1. */
+  --color-salmon-soft: #f08a8a;
+  --color-green-soft: #bcab77;
+
   /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
