@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useCart } from "../../_components/CartProvider";
 import { brl } from "../../_lib/price";
-
-const campo =
-  "h-11 w-full rounded-xl border-0 bg-dark-blue/60 px-3 text-sm text-white shadow-[0_0_0_1.5px_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 outline-none placeholder:text-white/40 focus:shadow-[0_0_0_2px_rgba(227,199,123,0.9)]";
-
-const rotulo = "mb-1 block text-xs text-white/50";
+import { campo, rotulo } from "./campos";
 
 /** Agrupa em blocos de 4: "4111111111111111" → "4111 1111 1111 1111". */
 function mascaraCartao(valor: string): string {
@@ -28,9 +25,16 @@ export default function PagamentoPanel({
   const [ano, setAno] = useState("");
   const [cvv, setCvv] = useState("");
   const [erro, setErro] = useState<string | null>(null);
+  const [finalizando, setFinalizando] = useState(false);
 
-  function handleSubmit(e: FormEvent) {
+  const { consumirCupom } = useCart();
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    // Reentrada: sem esta guarda, dois cliques disparariam dois redeem do mesmo
+    // cupom. O servidor recusaria o segundo (o update e condicional), mas o
+    // usuario levaria um "cupom ja utilizado" causado pelo proprio clique duplo.
+    if (finalizando) return;
 
     const digitos = numero.replace(/\D/g, "");
     const m = Number(mes);
@@ -45,7 +49,23 @@ export default function PagamentoPanel({
     if (cvv.replace(/\D/g, "").length !== 3) return setErro("CVV precisa ter 3 dígitos.");
 
     setErro(null);
-    onConfirm();
+    setFinalizando(true);
+
+    try {
+      // O cupom so e consumido AQUI, ao finalizar — validar no campo nao gasta
+      // nada. Se ele deixou de valer nesse meio tempo (outra aba, expiracao), o
+      // pedido NAO segue: o provider ja tirou o desconto da tela e o usuario
+      // precisa ver o preco real antes de confirmar de novo.
+      const consumido = await consumirCupom();
+      if (!consumido) {
+        setErro("O cupom nao vale mais. Confira o total e finalize de novo.");
+        return;
+      }
+
+      onConfirm();
+    } finally {
+      setFinalizando(false);
+    }
   }
 
   return (
@@ -128,9 +148,11 @@ export default function PagamentoPanel({
 
         <button
           type="submit"
-          className="mt-2 h-12 w-full rounded-xl bg-yellow font-semibold text-dark-blue transition hover:brightness-105 active:scale-[0.98]"
+          disabled={finalizando}
+          aria-busy={finalizando}
+          className="mt-2 h-12 w-full rounded-xl bg-yellow font-semibold text-dark-blue transition hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-dark-blue active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100"
         >
-          Finalizar pedido · {brl.format(total)}
+          {finalizando ? "Finalizando…" : `Finalizar pedido · ${brl.format(total)}`}
         </button>
       </form>
     </aside>

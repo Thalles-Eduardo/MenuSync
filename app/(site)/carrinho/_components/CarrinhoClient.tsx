@@ -9,6 +9,7 @@ import SakuraCorners from "../../_components/SakuraCorners";
 import TransitionLink from "../../_components/TransitionLink";
 import { useCart } from "../../_components/CartProvider";
 import { brl } from "../../_lib/price";
+import CupomField from "./CupomField";
 import PagamentoPanel from "./PagamentoPanel";
 
 function Stepper({
@@ -49,7 +50,8 @@ function Stepper({
 }
 
 export default function CarrinhoClient() {
-  const { items, hydrated, desconto, total, setQty, remove, clear } = useCart();
+  const { items, hydrated, desconto, cupom, descontoCupom, totalFinal, setQty, remove, clear } =
+    useCart();
   const [enviado, setEnviado] = useState(false);
 
   const scope = useRef<HTMLDivElement>(null);
@@ -207,6 +209,10 @@ export default function CarrinhoClient() {
                   ))}
                 </ul>
 
+                {/* Acima do resumo: o desconto precisa estar visivel ANTES do
+                    total, senao o usuario ve o valor cheio e ja desiste. */}
+                <CupomField />
+
                 <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
                   <TransitionLink
                     href="/cardapio"
@@ -235,13 +241,21 @@ export default function CarrinhoClient() {
                         Desconto: −{brl.format(desconto)}
                       </p>
                     )}
+                    {/* O percentual vem do `cupom` do provider, que so existe
+                        depois da confirmacao do servidor — nunca do storage. */}
+                    {cupom && (
+                      <p className="text-sm text-yellow">
+                        Cupom {cupom.code} (−{cupom.percent}%): −
+                        {brl.format(descontoCupom)}
+                      </p>
+                    )}
                     <p className="text-sm text-white/60">
                       Subtotal:{" "}
                       <span
                         className="text-2xl font-bold text-white"
                         style={{ fontFamily: "var(--font-eczar), serif" }}
                       >
-                        {brl.format(total)}
+                        {brl.format(totalFinal)}
                       </span>
                     </p>
                   </div>
@@ -249,7 +263,7 @@ export default function CarrinhoClient() {
               </section>
 
               <PagamentoPanel
-                total={total}
+                total={totalFinal}
                 onConfirm={() => {
                   setEnviado(true);
                   clear();
