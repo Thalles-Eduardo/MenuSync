@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { MenuItem } from "../../_data/menu";
 import AddToCartButton from "../../_components/AddToCartButton";
 import { brl, precoFinal, temDesconto } from "../../_lib/price";
+import { deMenuItem } from "../../_data/cart";
 
 export default function MenuItemCard({ item }: { item: MenuItem }) {
   const hasDiscount = temDesconto(item);
@@ -46,7 +47,7 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
           )}
           <span className="text-lg font-medium">{brl.format(finalPrice)}</span>
         </span>
-        <AddToCartButton compact />
+        <AddToCartButton compact item={deMenuItem(item)} />
       </div>
     </article>
   );

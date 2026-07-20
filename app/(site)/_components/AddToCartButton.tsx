@@ -2,6 +2,8 @@
 
 import { useRef } from "react";
 import gsap from "gsap";
+import { useCart } from "./CartProvider";
+import type { CartInput } from "../_data/cart";
 
 function CartIcon({ className }: { className?: string }) {
   return (
@@ -40,13 +42,22 @@ function CheckIcon({ className }: { className?: string }) {
   );
 }
 
-export default function AddToCartButton({ compact = false }: { compact?: boolean }) {
+export default function AddToCartButton({
+  item,
+  compact = false,
+}: {
+  item: CartInput;
+  compact?: boolean;
+}) {
   const btnRef = useRef<HTMLButtonElement>(null);
   const busy = useRef(false);
+  const { add } = useCart();
 
   const handleClick = () => {
     if (busy.current || !btnRef.current) return;
     busy.current = true;
+
+    add(item);
 
     const q = gsap.utils.selector(btnRef);
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

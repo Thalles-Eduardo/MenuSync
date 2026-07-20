@@ -6,6 +6,7 @@ import type { Dish } from "../_data/dishes";
 import AddToCartButton from "./AddToCartButton";
 import SakuraCorners from "./SakuraCorners";
 import { brl } from "../_lib/price";
+import { deDish } from "../_data/cart";
 
 function DishCard({ dish }: { dish: Dish }) {
   return (
@@ -32,7 +33,7 @@ function DishCard({ dish }: { dish: Dish }) {
         >
           {brl.format(dish.price)}
         </span>
-        <AddToCartButton />
+        <AddToCartButton item={deDish(dish)} />
       </div>
     </article>
   );
@@ -100,7 +101,7 @@ export default function MenuBento({
               >
                 {brl.format(activeDish.price)}
               </span>
-              <AddToCartButton />
+              <AddToCartButton item={deDish(activeDish)} />
             </div>
           </div>
         </article>

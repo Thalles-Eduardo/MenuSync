@@ -2,6 +2,7 @@ import type { Dish } from "../_data/dishes";
 import AddToCartButton from "./AddToCartButton";
 import PlayVideoButton from "./PlayVideoButton";
 import { brl } from "../_lib/price";
+import { deDish } from "../_data/cart";
 
 export default function HeroText({ dish }: { dish: Dish }) {
   return (
@@ -20,7 +21,7 @@ export default function HeroText({ dish }: { dish: Dish }) {
 
       <div className="mt-10 flex items-center gap-8">
         {dish.video && <PlayVideoButton src={dish.video} />}
-        <AddToCartButton />
+        <AddToCartButton item={deDish(dish)} />
       </div>
     </div>
   );
