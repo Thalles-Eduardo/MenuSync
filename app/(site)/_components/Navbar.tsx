@@ -1,6 +1,6 @@
-import Image from "next/image";
 import TransitionLink from "./TransitionLink";
 import HamburgerMenu from "./HamburgerMenu";
+import CartButton from "./CartButton";
 
 export default function Navbar({
   onSelectSection,
@@ -40,19 +40,7 @@ export default function Navbar({
         </div>
 
         {/* Carrinho */}
-        <button
-          type="button"
-          aria-label="Carrinho"
-          className="cursor-pointer opacity-90 transition hover:scale-110 hover:opacity-100"
-        >
-          <Image
-            src="/icons/cart.svg"
-            alt="Carrinho"
-            width={32}
-            height={32}
-            className="h-7 w-7 md:h-8 md:w-8"
-          />
-        </button>
+        <CartButton />
 
         <HamburgerMenu onSelectSection={onSelectSection} />
       </div>
