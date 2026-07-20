@@ -13,7 +13,7 @@ Desenvolver o site de um restaurante japonês com uma home moderna e interativa,
 
 ## Front-end
 
-- Next.js 15
+- Next.js 16
 - React 19
 - TypeScript
 - Tailwind CSS
@@ -28,6 +28,7 @@ Desenvolver o site de um restaurante japonês com uma home moderna e interativa,
 - Next.js Route Handlers
 - Prisma ORM
 - PostgreSQL
+- Resend (e-mail transacional)
 
 ## Infraestrutura
 
@@ -165,9 +166,20 @@ Fluxo:
 
 Regras:
 
-- [ ] Um cupom por e-mail (evitar duplicidade)
-- [ ] Rate limit anti-abuso no endpoint
-- [ ] Cupom com código, validade e status (ativo / usado / expirado)
+- [x] Um cupom por e-mail (evitar duplicidade)
+- [x] Rate limit anti-abuso no endpoint
+- [x] Cupom com código, validade e status (ativo / usado / expirado)
+
+> **Nota — modo sandbox.** O envio usa o remetente `onboarding@resend.dev`, que
+> dispensa verificar um domínio, mas a Resend **só entrega para o e-mail dono da
+> conta**. Qualquer outro destinatário é recusado e a API responde `502` — com o
+> cupom **já gravado**, porque a persistência acontece antes do envio. Para
+> entregar a endereços quaisquer, verifique um domínio no painel da Resend e
+> troque `COUPON_FROM_EMAIL` no `.env`; nenhum código muda.
+>
+> O status `USED` ainda não é escrito por ninguém: o resgate no checkout é da
+> Fase 07. Também não há job que vire `ACTIVE` em `EXPIRED` — hoje só o campo
+> `expiresAt` é gravado.
 
 ---
 
@@ -184,7 +196,7 @@ Regras:
 - [ ] Orders
 - [ ] OrderItems
 - [ ] Payments
-- [ ] Coupons (código, e-mail, validade, status — ver "Cupom por e-mail" na Fase 03)
+- [x] Coupons (código, e-mail, validade, status — ver "Cupom por e-mail" na Fase 03)
 
 ---
 
