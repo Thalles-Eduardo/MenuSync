@@ -60,11 +60,12 @@ export default function CarrinhoClient() {
     [],
   );
 
-  // Depende de `hydrated`: as linhas só existem no DOM depois da hidratação,
-  // antes disso não haveria `.cart-line` para animar.
+  // Depende de `hydrated`: as linhas só existem no DOM depois da hidratação.
+  // Sair cedo enquanto o esqueleto está na tela evita o aviso do GSAP de
+  // "target .cart-line not found" no primeiro render.
   useGSAP(
     () => {
-      if (reduce) return;
+      if (reduce || !hydrated) return;
       gsap.fromTo(
         ".cart-line",
         { y: 24, opacity: 0 },
@@ -201,7 +202,8 @@ export default function CarrinhoClient() {
                     href="/cardapio"
                     className="text-sm text-white/60 transition hover:text-caramel"
                   >
-                    ← Continuar comprando
+                    <Image src="/icons/arrow-undo-up-left.svg" alt="" width={16} height={16} className="inline-block mr-2 text" />
+                    Continuar comprando
                   </TransitionLink>
 
                   <div className="text-right">
