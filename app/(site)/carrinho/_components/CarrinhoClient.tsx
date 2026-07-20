@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 import Image from "next/image";
 import Navbar from "../../_components/Navbar";
 import TransitionLink from "../../_components/TransitionLink";
@@ -49,8 +51,31 @@ export default function CarrinhoClient() {
   const { items, hydrated, desconto, total, setQty, remove, clear } = useCart();
   const [enviado, setEnviado] = useState(false);
 
+  const scope = useRef<HTMLDivElement>(null);
+  const reduce = useMemo(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    [],
+  );
+
+  // Depende de `hydrated`: as linhas só existem no DOM depois da hidratação,
+  // antes disso não haveria `.cart-line` para animar.
+  useGSAP(
+    () => {
+      if (reduce) return;
+      gsap.fromTo(
+        ".cart-line",
+        { y: 24, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, stagger: 0.06, ease: "power3.out" },
+      );
+    },
+    { scope, dependencies: [hydrated] },
+  );
+
   return (
     <div
+      ref={scope}
       className="min-h-screen w-full text-white"
       style={{
         backgroundColor: "var(--color-dark-blue)",
