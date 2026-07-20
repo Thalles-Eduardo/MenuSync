@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { useCart } from "./CartProvider";
 import type { CartInput } from "../_data/cart";
@@ -52,6 +52,15 @@ export default function AddToCartButton({
   const btnRef = useRef<HTMLButtonElement>(null);
   const busy = useRef(false);
   const { add } = useCart();
+  const reset = useRef<gsap.core.Tween | null>(null);
+
+  // Sem isso, adicionar um item e navegar para o carrinho antes de 1,2s deixa o
+  // delayedCall abaixo disparar sobre um botão já desmontado.
+  useEffect(() => {
+    return () => {
+      reset.current?.kill();
+    };
+  }, []);
 
   const handleClick = () => {
     if (busy.current || !btnRef.current) return;
@@ -65,7 +74,7 @@ export default function AddToCartButton({
     if (reduce) {
       gsap.set(q(".atc-idle"), { autoAlpha: 0 });
       gsap.set(q(".atc-done"), { autoAlpha: 1 });
-      gsap.delayedCall(1.2, () => {
+      reset.current = gsap.delayedCall(1.2, () => {
         gsap.set(q(".atc-done"), { autoAlpha: 0 });
         gsap.set(q(".atc-idle"), { autoAlpha: 1 });
         busy.current = false;
