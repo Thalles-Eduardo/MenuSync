@@ -160,13 +160,13 @@ export default function FooterSection({
             aria-invalid={status === "error"}
             className="h-12 flex-1 rounded-xl border-0 bg-dark-blue/60 px-4 text-sm text-white shadow-[0_0_0_1.5px_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 outline-none placeholder:text-white/55 hover:shadow-[0_0_0_2px_rgba(227,165,107,0.5)] focus:shadow-[0_0_0_2px_rgba(227,199,123,0.9)]"
           />
-          <button
-            type="submit"
-            disabled={status === "loading"}
-            className="flex h-12 items-center justify-center gap-2 rounded-xl bg-yellow px-6 text-sm font-semibold text-dark-blue transition-transform duration-200 hover:brightness-105 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {status === "loading" ? "Enviando…" : "Quero meu cupom"}
-            {status !== "loading" && <span aria-hidden="true">→</span>}
+          <button type="submit" disabled={status === "loading"} className="coupon-btn">
+            <div>
+              <span>
+                {status === "loading" ? "Enviando…" : "Quero meu cupom"}
+                {status !== "loading" && <span aria-hidden="true">→</span>}
+              </span>
+            </div>
           </button>
         </form>
 
