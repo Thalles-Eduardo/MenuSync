@@ -2,8 +2,12 @@ import { z } from "zod";
 
 const esquema = z.object({
   DATABASE_URL: z.url(),
-  RESEND_API_KEY: z.string().min(1),
-  COUPON_FROM_EMAIL: z.string().min(1),
+  MAILERSEND_API_KEY: z.string().min(1),
+  // Endereco puro, sem "Nome <...>": a API da MailerSend recebe o nome de
+  // exibicao num campo separado, entao guardar os dois juntos so criaria um
+  // parser fragil no caminho do envio.
+  COUPON_FROM_EMAIL: z.email(),
+  COUPON_FROM_NAME: z.string().min(1).default("MenuSync"),
 });
 
 export type Env = z.infer<typeof esquema>;
@@ -27,7 +31,7 @@ export function getEnv(): Env {
 
   if (!resultado.success) {
     // So os NOMES das chaves entram na mensagem. Os valores sao segredos
-    // (chave da Resend, senha do banco) e um erro costuma acabar em log
+    // (chave da MailerSend, senha do banco) e um erro costuma acabar em log
     // agregado, console de deploy ou ticket de suporte.
     const chaves = [...new Set(resultado.error.issues.map((i) => i.path.join(".")))];
     throw new Error(

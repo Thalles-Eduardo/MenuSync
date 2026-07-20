@@ -160,7 +160,7 @@ Fluxo:
 1. Campo de e-mail na home, com validação (Zod: formato válido e obrigatório).
 2. Submit chama uma Route Handler (`POST /api/coupons`).
 3. O backend valida o e-mail, gera/associa um código de cupom (registro em `Coupons`) e o vincula ao e-mail.
-4. Envio do e-mail transacional com o cupom (ex.: Resend / Nodemailer).
+4. Envio do e-mail transacional com o cupom (MailerSend).
 5. Feedback na UI: sucesso, e-mail já cadastrado ou erro.
 
 Regras:

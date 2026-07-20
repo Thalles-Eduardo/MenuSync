@@ -1,4 +1,4 @@
-# Spec — Cupom por e-mail: backend real (API + Postgres + Resend)
+# Spec — Cupom por e-mail: backend real (API + Postgres + MailerSend)
 
 **Data:** 2026-07-20
 **Branch:** `feat/sakura-cardapio`
@@ -28,7 +28,7 @@ infraestrutura da Fase 04 — que as features seguintes (pedidos, reservas) reap
 | Decisão | Escolha |
 |---|---|
 | Persistência | Docker + Postgres + Prisma (Fase 04 de verdade) |
-| Envio | Resend (usuário tem conta) |
+| Envio | **MailerSend** (`POST https://api.mailersend.com/v1/email`) |
 | Resposta a e-mail já cadastrado | **Genérica** — não revela se o e-mail está na base |
 
 ## Consequência da resposta genérica: o código sai da tela
@@ -123,7 +123,8 @@ Isso está documentado no código, não escondido.
 
 **Novos — infra**
 - `docker-compose.yml` — `postgres:17-alpine`, volume nomeado, healthcheck
-- `.env.example` — template commitado (`DATABASE_URL`, `RESEND_API_KEY`, `COUPON_FROM_EMAIL`)
+- `.env.example` — template commitado (`DATABASE_URL`, `MAILERSEND_API_KEY`,
+  `COUPON_FROM_EMAIL`, `COUPON_FROM_NAME`)
 - `prisma/schema.prisma` + `prisma/migrations/`
 
 **Novos — servidor**
@@ -132,7 +133,10 @@ Isso está documentado no código, não escondido.
 - `lib/rate-limit.ts` — janela fixa em memória
 - `lib/coupons/code.ts` — geração com `crypto.randomInt`
 - `lib/coupons/service.ts` — criar-ou-recuperar + orquestração do envio
-- `lib/coupons/mailer.ts` — adaptador Resend atrás de uma interface
+- `lib/coupons/mailer.ts` — adaptador MailerSend atrás de uma interface
+  (`fetch` direto, sem SDK). Sucesso é **202 com corpo vazio**, `to` é **array**
+  de objetos, auth em `Authorization: Bearer`, e há timeout de 10s para um
+  provedor lento não segurar a requisição do usuário.
 - `app/api/coupons/route.ts` — handler POST
 
 `lib/` no topo (não `app/(site)/_lib/`, que é escopo de UI) — é a pasta que o próprio
@@ -141,7 +145,7 @@ README já prevê na estrutura do projeto.
 **Editados**
 - `app/(site)/_components/FooterSection.tsx` — `fetch` no lugar da simulação; remove
   `makeCoupon()` e o estado `coupon`; mensagem de sucesso genérica; trata 429
-- `package.json` — deps `@prisma/client`, `resend`; dev `prisma`; `postinstall: prisma generate`
+- `package.json` — dep `@prisma/client`; dev `prisma`; `postinstall: prisma generate`
 - `README.md` — marca as regras do cupom e os itens de Fase 04 efetivamente entregues
 
 ### Nota de build (`getEnv()` e não validação no import)
@@ -174,7 +178,8 @@ abaixo é um script, não testes de verdade. Vitest é o próximo passo natural.
      (é o teste que prova constraint em vez de check-then-insert)
 5. CDP (1440×900): home → painel Contato → submit → mensagem genérica de sucesso e
    **nenhum código na tela**; e-mail inválido → erro
-6. Envio real: com `RESEND_API_KEY` no `.env`, um e-mail de verdade chega à caixa
+6. Envio real: com `MAILERSEND_API_KEY` no `.env` e o domínio do remetente
+   verificado na MailerSend, um e-mail de verdade chega à caixa
 
 ## Fora de escopo
 

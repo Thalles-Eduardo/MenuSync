@@ -21,8 +21,9 @@ Regras gerais para quem executar:
 - `.env.example` commitado:
   ```
   DATABASE_URL="postgresql://menusync:menusync@localhost:5432/menusync?schema=public"
-  RESEND_API_KEY=""
-  COUPON_FROM_EMAIL="MenuSync <cupom@seudominio.com>"
+  MAILERSEND_API_KEY=""
+  COUPON_FROM_EMAIL="cupom@seudominio.com"
+  COUPON_FROM_NAME="MenuSync"
   ```
 - **Verificar:** `docker compose up -d` e `docker compose ps` mostrando `healthy`.
 
@@ -40,8 +41,8 @@ Regras gerais para quem executar:
 
 ## Task 3 — `lib/env.ts`
 
-- Schema Zod: `DATABASE_URL` url obrigatória; `RESEND_API_KEY` string mín. 1;
-  `COUPON_FROM_EMAIL` e-mail/remetente obrigatório.
+- Schema Zod: `DATABASE_URL` url obrigatória; `MAILERSEND_API_KEY` string mín. 1;
+  `COUPON_FROM_EMAIL` e-mail válido; `COUPON_FROM_NAME` com default `"MenuSync"`.
 - Exportar `getEnv()` que valida na primeira chamada e cacheia o resultado.
   **Não** validar no escopo do módulo — quebraria `npm run build` sem `.env`
   (ver "Nota de build" na spec).
@@ -65,10 +66,13 @@ Regras gerais para quem executar:
   é forjável sem proxy confiável) — declarada, não escondida.
 - **Verificar:** unitariamente — 5 passam, a 6ª é bloqueada, e após a janela libera.
 
-## Task 6 — Mailer (Resend)
+## Task 6 — Mailer (MailerSend)
 
-- Instalar `resend`.
-- `lib/coupons/mailer.ts`: interface `EnviadorDeCupom` + implementação Resend.
+- `lib/coupons/mailer.ts`: interface `EnviadorDeCupom` + implementação MailerSend
+  via `fetch` (sem SDK — o contrato é um POST JSON simples).
+- `POST https://api.mailersend.com/v1/email`, `Authorization: Bearer <token>`.
+  Sucesso é **202 Accepted com corpo vazio** — não tente `.json()` no sucesso.
+  `to` é **array** de `{ email }`. Timeout de 10s via `AbortSignal.timeout`.
 - Assunto/corpo em pt-BR com o código e a validade. HTML simples, sem imagem externa.
 - **Nunca** logar o e-mail inteiro nem o código; helper de redação
   (`f***@dominio.com`) para os logs.
@@ -108,8 +112,8 @@ Regras gerais para quem executar:
   `FOO@X.com` → não cria segunda linha · inválido → 400 · janela estourada → 429 ·
   **corpo nunca contém o código** · **5 requisições simultâneas → exatamente 1 linha**.
 - Limpar a tabela no começo para o estado ser determinístico.
-- Registrar o mailer como stub nesta suite (não gastar cota da Resend); o envio real é
-  a Task 11.
+- Registrar o mailer como stub nesta suite (não gastar cota do provedor); o envio real
+  é a Task 11.
 
 ## Task 10 — Frontend: plugar a API
 
@@ -129,8 +133,9 @@ Regras gerais para quem executar:
 
 ## Task 11 — Envio real + README
 
-- Com `RESEND_API_KEY` real no `.env` (o usuário fornece), disparar um envio de
-  verdade e confirmar a chegada.
+- Com `MAILERSEND_API_KEY` real no `.env` e o domínio do remetente verificado no
+  painel da MailerSend (o usuário fornece os dois), disparar um envio de verdade e
+  confirmar a chegada. Sem o domínio verificado a API devolve 422 `#MS42207`.
 - `README.md` — marcar **só** o que foi entregue:
   - Fase 03, regras do cupom: marcar "Um cupom por e-mail" e "Rate limit anti-abuso";
     marcar "Cupom com código, validade e status".

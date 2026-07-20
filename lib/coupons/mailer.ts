@@ -1,4 +1,3 @@
-import { Resend } from "resend";
 import { getEnv } from "../env";
 
 export type CupomParaEnvio = {
@@ -88,41 +87,73 @@ function montarTexto(code: string, validade: string): string {
   ].join("\n");
 }
 
-export class EnviadorResend implements EnviadorDeCupom {
+const ENDPOINT = "https://api.mailersend.com/v1/email";
+
+// Um provedor lento nao pode segurar a requisicao do usuario indefinidamente:
+// sem timeout, uma conexao pendurada prende o handler ate o limite da plataforma.
+const TIMEOUT_MS = 10_000;
+
+/**
+ * Envio via API HTTP da MailerSend (POST /v1/email).
+ *
+ * Usamos `fetch` direto em vez do SDK: o contrato e um POST JSON simples, e uma
+ * dependencia a menos e uma superficie a menos para auditar.
+ */
+export class EnviadorMailerSend implements EnviadorDeCupom {
   async enviar(cupom: CupomParaEnvio): Promise<void> {
     const env = getEnv();
     const validade = formatarValidade(cupom.expiresAt);
 
-    let resposta;
+    let resposta: Response;
     try {
-      const resend = new Resend(env.RESEND_API_KEY);
-      resposta = await resend.emails.send({
-        from: env.COUPON_FROM_EMAIL,
-        to: cupom.email,
-        subject: "Seu cupom de 10% no MenuSync",
-        html: montarHtml(cupom.code, validade),
-        text: montarTexto(cupom.code, validade),
+      resposta = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${env.MAILERSEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: { email: env.COUPON_FROM_EMAIL, name: env.COUPON_FROM_NAME },
+          // `to` e um ARRAY de objetos nesta API — string simples e recusada.
+          to: [{ email: cupom.email }],
+          subject: "Seu cupom de 10% no MenuSync",
+          html: montarHtml(cupom.code, validade),
+          text: montarTexto(cupom.code, validade),
+        }),
+        signal: AbortSignal.timeout(TIMEOUT_MS),
       });
     } catch (erro) {
-      // Falha de rede/DNS/timeout: o SDK lanca. Vira o mesmo erro tipado.
+      // Rede, DNS ou o timeout acima: nada saiu.
       throw new ErroDeEnvio("Falha ao contatar o provedor de e-mail", erro);
     }
 
-    if (resposta.error) {
-      // O SDK da Resend nao lanca em erro de API: devolve { data, error }.
-      // Ignorar isso faria o handler responder 200 para um envio que nunca saiu.
-      throw new ErroDeEnvio("O provedor de e-mail recusou o envio", resposta.error);
+    // Sucesso aqui e 202 Accepted com CORPO VAZIO (nao 200 com JSON). Tentar
+    // fazer .json() do sucesso lancaria; por isso a checagem e por status.
+    if (resposta.status === 202) {
+      // NUNCA o e-mail inteiro e NUNCA o codigo: o codigo vale desconto e quem le
+      // log nao deveria conseguir resgatar cupom alheio a partir dele. O
+      // x-message-id serve para rastrear o envio no painel sem expor nada disso.
+      console.info(
+        `[coupons] cupom enviado para ${redigirEmail(cupom.email)}` +
+          ` (msg: ${resposta.headers.get("x-message-id") ?? "sem id"})`,
+      );
+      return;
     }
 
-    // NUNCA o e-mail inteiro e NUNCA o codigo: o codigo vale desconto e quem le
-    // log nao deveria conseguir resgatar cupom alheio a partir dele.
-    console.info(`[coupons] cupom enviado para ${redigirEmail(cupom.email)}`);
+    // Erro: o corpo tem o detalhe (ex.: 422 com "#MS42207" quando o dominio do
+    // remetente nao esta verificado). Vai para a `causa`, que so o log ve —
+    // nunca a resposta ao cliente.
+    const detalhe = await resposta.text().catch(() => "");
+    throw new ErroDeEnvio(
+      `O provedor de e-mail recusou o envio (HTTP ${resposta.status})`,
+      detalhe.slice(0, 500),
+    );
   }
 }
 
-// Seam de injecao: o handler pede o enviador em vez de instanciar o da Resend
-// direto, para a suite de integracao trocar por um stub e nao gastar cota real.
-let enviadorAtual: EnviadorDeCupom = new EnviadorResend();
+// Seam de injecao: o handler pede o enviador em vez de instanciar o real direto,
+// para a suite de integracao trocar por um stub e nao gastar cota real.
+let enviadorAtual: EnviadorDeCupom = new EnviadorMailerSend();
 
 export function obterEnviador(): EnviadorDeCupom {
   return enviadorAtual;
