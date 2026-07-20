@@ -30,13 +30,42 @@ function calcularValidade(agora = new Date()): Date {
   return validade;
 }
 
+type ErroDoAdapter = {
+  driverAdapterError?: {
+    cause?: {
+      constraint?: { fields?: unknown; index?: unknown };
+      originalMessage?: unknown;
+    };
+  };
+  target?: unknown;
+};
+
+/**
+ * Extrai quais campos o P2002 acusou.
+ *
+ * A forma disso muda conforme o caminho: o Prisma "classico" preenche
+ * `meta.target` (string[] ou string), mas com o driver adapter do Postgres
+ * (Prisma 7) `meta.target` NAO existe — a informacao vem em
+ * `meta.driverAdapterError.cause.constraint.fields`. Ler so `target` fazia o
+ * conflito de e-mail escapar para o catch generico e virar 500 em vez de
+ * devolver o cupom existente; foi exatamente o que aconteceu no primeiro teste
+ * manual. Por isso lemos as duas formas, com o texto original como ultimo
+ * recurso (ele cita o nome do indice, ex.: "coupons_email_key").
+ */
 function alvosDoP2002(erro: Prisma.PrismaClientKnownRequestError): string[] {
-  // `target` varia por adapter: pode vir como string[] ou como uma string com o
-  // nome da constraint (ex.: "coupons_email_key"). Normalizamos para uma lista.
-  const alvo = erro.meta?.target;
-  if (Array.isArray(alvo)) return alvo.map(String);
-  if (typeof alvo === "string") return [alvo];
-  return [];
+  const meta = (erro.meta ?? {}) as ErroDoAdapter;
+  const alvos: string[] = [];
+
+  if (Array.isArray(meta.target)) alvos.push(...meta.target.map(String));
+  else if (typeof meta.target === "string") alvos.push(meta.target);
+
+  const causa = meta.driverAdapterError?.cause;
+  const campos = causa?.constraint?.fields;
+  if (Array.isArray(campos)) alvos.push(...campos.map(String));
+  if (typeof causa?.constraint?.index === "string") alvos.push(causa.constraint.index);
+  if (typeof causa?.originalMessage === "string") alvos.push(causa.originalMessage);
+
+  return alvos;
 }
 
 function ehViolacaoDe(campo: string, erro: Prisma.PrismaClientKnownRequestError): boolean {
