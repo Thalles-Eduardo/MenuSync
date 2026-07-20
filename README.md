@@ -143,8 +143,13 @@ Construir a base visual do projeto no Figma.
 - [x] Pratos em destaque
 - [x] Sobre o restaurante (About)
 - [x] Reservas (CTA)
-- [ ] Cupom por e-mail
-- [ ] Footer/Contato
+- [x] Cupom por e-mail
+- [x] Footer
+
+## Página separada
+
+- [x] Cardápio
+- [ ] Carrinho
 
 ## Cupom por e-mail
 
