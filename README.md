@@ -149,7 +149,7 @@ Construir a base visual do projeto no Figma.
 ## Página separada
 
 - [x] Cardápio
-- [ ] Carrinho
+- [x] Carrinho
 
 ## Cupom por e-mail
 
