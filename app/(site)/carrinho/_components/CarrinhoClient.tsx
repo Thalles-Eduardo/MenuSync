@@ -95,7 +95,9 @@ export default function CarrinhoClient() {
         <Navbar />
 
         <main className="mx-auto max-w-6xl px-8 pt-28 pb-16 md:px-12">
-          <p className="text-sm tracking-[0.3em] text-yellow/80">カート · CARRINHO</p>
+          <p className="text-sm tracking-[0.3em] text-yellow/80">
+            カート · CARRINHO
+          </p>
           <h1
             className="mt-1 text-5xl font-bold md:text-6xl"
             style={{ fontFamily: "var(--font-eczar), serif" }}
@@ -108,13 +110,19 @@ export default function CarrinhoClient() {
           {!hydrated ? (
             <div className="mt-12 space-y-4" aria-hidden="true">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="h-24 animate-pulse rounded-xl bg-white/5" />
+                <div
+                  key={i}
+                  className="h-24 animate-pulse rounded-xl bg-white/5"
+                />
               ))}
             </div>
           ) : enviado ? (
             /* Vem ANTES do ramo de carrinho vazio: clear() esvazia a lista, então
                a ordem inversa faria o sucesso cair no estado vazio. */
-            <div role="status" className="mt-16 flex flex-col items-start gap-6">
+            <div
+              role="status"
+              className="mt-16 flex flex-col items-start gap-6"
+            >
               <h2
                 className="text-3xl font-bold text-yellow"
                 style={{ fontFamily: "var(--font-eczar), serif" }}
@@ -161,7 +169,9 @@ export default function CarrinhoClient() {
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-semibold">{item.name}</p>
                         {item.weight && (
-                          <p className="mt-0.5 text-xs text-white/50">{item.weight}</p>
+                          <p className="mt-0.5 text-xs text-white/50">
+                            {item.weight}
+                          </p>
                         )}
                       </div>
 
@@ -200,9 +210,22 @@ export default function CarrinhoClient() {
                 <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
                   <TransitionLink
                     href="/cardapio"
-                    className="text-sm text-white/60 transition hover:text-caramel"
+                    className="text-sm text-white/60 transition hover:text-caramel flex items-center"
                   >
-                    <Image src="/icons/arrow-undo-up-left.svg" alt="" width={16} height={16} className="inline-block mr-2 text" />
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M7 13L3 9M3 9L7 5M3 9H16C18.7614 9 21 11.2386 21 14C21 16.7614 18.7614 19 16 19H11"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
                     Continuar comprando
                   </TransitionLink>
 
