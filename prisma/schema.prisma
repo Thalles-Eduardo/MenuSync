@@ -26,6 +26,13 @@ model Coupon {
   code   String       @unique
   status CouponStatus @default(ACTIVE)
 
+  // O desconto e uma COLUNA, nao algo inferido do prefixo "SAKURA10-". Se o
+  // frontend tivesse que extrair "10" da string, a regra de negocio moraria no
+  // cliente — e uma campanha de 20% viraria deploy em vez de INSERT. O valor
+  // desta coluna e a unica fonte de verdade do percentual; o cliente nunca o
+  // persiste (ver a spec do resgate).
+  percent Int @default(10)
+
   // Cobre a "validade" do README; gravado como criacao + 30 dias.
   expiresAt DateTime
 
