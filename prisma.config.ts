@@ -9,4 +9,8 @@ export default defineConfig({
   datasource: {
     url: env("DATABASE_URL"),
   },
+  // No Prisma 7 o seed sai do package.json e vem para ca.
+  migrations: {
+    seed: "tsx prisma/seed.ts",
+  },
 });
