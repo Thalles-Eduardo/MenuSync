@@ -39,36 +39,40 @@ type SeedProduto = {
   category: CategoriaSlug;
   image: string;
   discount: number | null;
+  // Ordem de exibicao dentro da categoria (1-based, reinicia a cada
+  // categoria). Reproduz a ordem curada que existia em _data/menu.ts, antes
+  // da migracao para o banco.
+  position: number;
 };
 
 const PRODUTOS: SeedProduto[] = [
-  { slug: "sushi-10", name: "Sushi 10 P/c", description: "Seleção do sushiman com salmão, atum e camarão sobre arroz shari.", weight: "10 un.", price: "89.90", category: "sushi", image: "/plate4.png", discount: null },
-  { slug: "niguiri-salmao", name: "Niguiri de Salmão", description: "Fatia de salmão fresco sobre bolinho de arroz temperado.", weight: "6 un.", price: "42.90", category: "sushi", image: "/plate1.webp", discount: null },
-  { slug: "sashimi-misto", name: "Sashimi Misto", description: "Cortes de salmão, atum e peixe branco selecionados do dia.", weight: "12 un.", price: "78.90", category: "sushi", image: "/food4.webp", discount: 15 },
-  { slug: "combinado-sakura", name: "Combinado Sakura", description: "20 peças variadas entre niguiris, uramaki e sashimi.", weight: "20 un.", price: "129.90", category: "sushi", image: "/plate3.png", discount: null },
+  { slug: "sushi-10", name: "Sushi 10 P/c", description: "Seleção do sushiman com salmão, atum e camarão sobre arroz shari.", weight: "10 un.", price: "89.90", category: "sushi", image: "/plate4.png", discount: null, position: 1 },
+  { slug: "niguiri-salmao", name: "Niguiri de Salmão", description: "Fatia de salmão fresco sobre bolinho de arroz temperado.", weight: "6 un.", price: "42.90", category: "sushi", image: "/plate1.webp", discount: null, position: 2 },
+  { slug: "sashimi-misto", name: "Sashimi Misto", description: "Cortes de salmão, atum e peixe branco selecionados do dia.", weight: "12 un.", price: "78.90", category: "sushi", image: "/food4.webp", discount: 15, position: 3 },
+  { slug: "combinado-sakura", name: "Combinado Sakura", description: "20 peças variadas entre niguiris, uramaki e sashimi.", weight: "20 un.", price: "129.90", category: "sushi", image: "/plate3.png", discount: null, position: 4 },
 
-  { slug: "uramaki-filadelfia", name: "Uramaki Filadélfia", description: "Salmão, cream cheese e cebolinha, gergelim por fora.", weight: "8 un.", price: "38.90", category: "rolls", image: "/food1.webp", discount: null },
-  { slug: "hot-roll", name: "Hot Roll Especial", description: "Uramaki empanado e frito, finalizado com molho tarê.", weight: "8 un.", price: "44.90", category: "rolls", image: "/food2.webp", discount: null },
-  { slug: "temaki-salmao", name: "Temaki de Salmão", description: "Cone de alga recheado com salmão, arroz e cream cheese.", weight: "1 un.", price: "32.90", category: "rolls", image: "/plate2.png", discount: 10 },
-  { slug: "uramaki-skin", name: "Uramaki Skin", description: "Pele de salmão crocante, cream cheese e cebolinha.", weight: "8 un.", price: "34.90", category: "rolls", image: "/food3.webp", discount: null },
+  { slug: "uramaki-filadelfia", name: "Uramaki Filadélfia", description: "Salmão, cream cheese e cebolinha, gergelim por fora.", weight: "8 un.", price: "38.90", category: "rolls", image: "/food1.webp", discount: null, position: 1 },
+  { slug: "hot-roll", name: "Hot Roll Especial", description: "Uramaki empanado e frito, finalizado com molho tarê.", weight: "8 un.", price: "44.90", category: "rolls", image: "/food2.webp", discount: null, position: 2 },
+  { slug: "temaki-salmao", name: "Temaki de Salmão", description: "Cone de alga recheado com salmão, arroz e cream cheese.", weight: "1 un.", price: "32.90", category: "rolls", image: "/plate2.png", discount: 10, position: 3 },
+  { slug: "uramaki-skin", name: "Uramaki Skin", description: "Pele de salmão crocante, cream cheese e cebolinha.", weight: "8 un.", price: "34.90", category: "rolls", image: "/food3.webp", discount: null, position: 4 },
 
-  { slug: "sopa-misso", name: "Sopa de Missô", description: "Caldo tradicional com tofu, alga wakame e cebolinha.", weight: "300 ml", price: "24.90", category: "entradas", image: "/plate3.png", discount: null },
-  { slug: "gyoza", name: "Gyoza", description: "Pastéis japoneses de porco e legumes grelhados na chapa.", weight: "6 un.", price: "29.90", category: "entradas", image: "/food2.webp", discount: null },
-  { slug: "sunomono", name: "Sunomono", description: "Salada agridoce de pepino com gergelim e kani.", weight: "200 g", price: "22.90", category: "entradas", image: "/plate1.webp", discount: null },
-  { slug: "edamame", name: "Edamame", description: "Vagens de soja no vapor com flor de sal.", weight: "150 g", price: "19.90", category: "entradas", image: "/food4.webp", discount: null },
+  { slug: "sopa-misso", name: "Sopa de Missô", description: "Caldo tradicional com tofu, alga wakame e cebolinha.", weight: "300 ml", price: "24.90", category: "entradas", image: "/plate3.png", discount: null, position: 1 },
+  { slug: "gyoza", name: "Gyoza", description: "Pastéis japoneses de porco e legumes grelhados na chapa.", weight: "6 un.", price: "29.90", category: "entradas", image: "/food2.webp", discount: null, position: 2 },
+  { slug: "sunomono", name: "Sunomono", description: "Salada agridoce de pepino com gergelim e kani.", weight: "200 g", price: "22.90", category: "entradas", image: "/plate1.webp", discount: null, position: 3 },
+  { slug: "edamame", name: "Edamame", description: "Vagens de soja no vapor com flor de sal.", weight: "150 g", price: "19.90", category: "entradas", image: "/food4.webp", discount: null, position: 4 },
 
-  { slug: "teishoku", name: "Teishoku Japonês", description: "Combinado completo com salmão, teriyaki e tempurá.", weight: "1 porção", price: "149.99", category: "quentes", image: "/plate1.webp", discount: null },
-  { slug: "okonomiyaki", name: "Okonomiyaki", description: "A 'pizza japonesa' com repolho, molho e katsuobushi.", weight: "1 un.", price: "54.90", category: "quentes", image: "/plate2.png", discount: null },
-  { slug: "yakisoba", name: "Yakisoba de Frango", description: "Macarrão salteado com frango, legumes e molho shoyu.", weight: "400 g", price: "46.90", category: "quentes", image: "/food1.webp", discount: 15 },
-  { slug: "tempura-camarao", name: "Tempurá de Camarão", description: "Camarões empanados na massa leve e crocante.", weight: "8 un.", price: "58.90", category: "quentes", image: "/plate4.png", discount: null },
+  { slug: "teishoku", name: "Teishoku Japonês", description: "Combinado completo com salmão, teriyaki e tempurá.", weight: "1 porção", price: "149.99", category: "quentes", image: "/plate1.webp", discount: null, position: 1 },
+  { slug: "okonomiyaki", name: "Okonomiyaki", description: "A 'pizza japonesa' com repolho, molho e katsuobushi.", weight: "1 un.", price: "54.90", category: "quentes", image: "/plate2.png", discount: null, position: 2 },
+  { slug: "yakisoba", name: "Yakisoba de Frango", description: "Macarrão salteado com frango, legumes e molho shoyu.", weight: "400 g", price: "46.90", category: "quentes", image: "/food1.webp", discount: 15, position: 3 },
+  { slug: "tempura-camarao", name: "Tempurá de Camarão", description: "Camarões empanados na massa leve e crocante.", weight: "8 un.", price: "58.90", category: "quentes", image: "/plate4.png", discount: null, position: 4 },
 
-  { slug: "mochi", name: "Mochi (3 un.)", description: "Bolinhos de arroz gelados recheados de sorvete.", weight: "3 un.", price: "26.90", category: "sobremesas", image: "/food3.webp", discount: null },
-  { slug: "harumaki-banana", name: "Harumaki de Banana", description: "Rolinho crocante de banana com canela e açúcar.", weight: "4 un.", price: "22.90", category: "sobremesas", image: "/plate2.png", discount: null },
-  { slug: "dorayaki", name: "Dorayaki", description: "Panqueca japonesa recheada com doce de feijão azuki.", weight: "1 un.", price: "18.90", category: "sobremesas", image: "/food4.webp", discount: null },
+  { slug: "mochi", name: "Mochi (3 un.)", description: "Bolinhos de arroz gelados recheados de sorvete.", weight: "3 un.", price: "26.90", category: "sobremesas", image: "/food3.webp", discount: null, position: 1 },
+  { slug: "harumaki-banana", name: "Harumaki de Banana", description: "Rolinho crocante de banana com canela e açúcar.", weight: "4 un.", price: "22.90", category: "sobremesas", image: "/plate2.png", discount: null, position: 2 },
+  { slug: "dorayaki", name: "Dorayaki", description: "Panqueca japonesa recheada com doce de feijão azuki.", weight: "1 un.", price: "18.90", category: "sobremesas", image: "/food4.webp", discount: null, position: 3 },
 
-  { slug: "cha-verde", name: "Chá Verde Gelado", description: "Chá verde gelado levemente adoçado, jarra individual.", weight: "500 ml", price: "14.90", category: "bebidas", image: "/food1.webp", discount: null },
-  { slug: "ramune", name: "Ramune", description: "Refrigerante japonês clássico de garrafa de gude.", weight: "200 ml", price: "16.90", category: "bebidas", image: "/plate3.png", discount: null },
-  { slug: "sake-quente", name: "Saquê Quente", description: "Saquê tradicional servido morno, dose individual.", weight: "180 ml", price: "28.90", category: "bebidas", image: "/plate4.png", discount: 10 },
+  { slug: "cha-verde", name: "Chá Verde Gelado", description: "Chá verde gelado levemente adoçado, jarra individual.", weight: "500 ml", price: "14.90", category: "bebidas", image: "/food1.webp", discount: null, position: 1 },
+  { slug: "ramune", name: "Ramune", description: "Refrigerante japonês clássico de garrafa de gude.", weight: "200 ml", price: "16.90", category: "bebidas", image: "/plate3.png", discount: null, position: 2 },
+  { slug: "sake-quente", name: "Saquê Quente", description: "Saquê tradicional servido morno, dose individual.", weight: "180 ml", price: "28.90", category: "bebidas", image: "/plate4.png", discount: 10, position: 3 },
 ];
 
 async function main() {
@@ -97,6 +101,7 @@ async function main() {
       price: p.price,
       discount: p.discount,
       image: p.image,
+      position: p.position,
       categoryId,
     };
 

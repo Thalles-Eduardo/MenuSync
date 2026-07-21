@@ -31,13 +31,18 @@ export function deProduto(p: ProdutoDTO): CartInput {
  * O `menu.find` que morava aqui existia para o carrinho nao cobrar o preco
  * desatualizado de dishes.ts. Com Product como fonte unica, dish.price E o
  * preco do banco — o contorno deixou de ser necessario.
+ *
+ * `weight` tambem vem do banco: fixa-lo em "" fazia o mesmo produto aparecer
+ * sem peso quando adicionado pela home e com peso quando adicionado pelo
+ * /cardapio, e o CartProvider funde as linhas por id mantendo os campos de quem
+ * entrou primeiro.
  */
 export function deDish(dish: Dish): CartInput {
   return {
     id: dish.id,
     name: dish.name,
     image: dish.thumb, // a home usa a miniatura, nao a imagem do catalogo
-    weight: "",
+    weight: dish.weight,
     precoOriginal: dish.price,
     unitPrice: dish.unitPrice,
   };

@@ -70,6 +70,22 @@ describe("catalogo", () => {
   // Este e o unico teste do arquivo que ESCREVE. Ele mexe so na coluna
   // `available` de um produto do seed e restaura no finally, inclusive se a
   // assercao falhar.
+  // A ordem dentro da categoria e curada, nao alfabetica. Sem esta assercao a
+  // regressao que a motivou (a aba Sushi abrindo em "Combinado Sakura" em vez de
+  // "Sushi 10 P/c") passa despercebida: contar 22 cards nao pega ordem.
+  it("respeita a ordem curada dentro da categoria", async () => {
+    const produtos = await listarProdutos();
+    const sushi = produtos
+      .filter((p) => p.categorySlug === "sushi")
+      .map((p) => p.slug);
+    expect(sushi).toEqual([
+      "sushi-10",
+      "niguiri-salmao",
+      "sashimi-misto",
+      "combinado-sakura",
+    ]);
+  });
+
   it("omite produto indisponivel", async () => {
     await prisma.product.update({
       where: { slug: "teishoku" },

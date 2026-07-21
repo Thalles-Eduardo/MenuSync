@@ -25,6 +25,7 @@ export type Dish = DishEditorial & {
   name: string;
   price: number; // preco de tabela
   unitPrice: number; // ja com desconto
+  weight: string;
 };
 
 export const dishesEditorial: DishEditorial[] = [

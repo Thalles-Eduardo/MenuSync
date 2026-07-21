@@ -94,7 +94,7 @@ export async function listarProdutos(): Promise<
 > {
   const linhas = await prisma.product.findMany({
     where: { available: true },
-    orderBy: [{ category: { position: "asc" } }, { name: "asc" }],
+    orderBy: [{ category: { position: "asc" } }, { position: "asc" }],
     select: { ...SELECAO, category: { select: { slug: true } } },
   });
   return linhas.map((l) => ({ ...paraDTO(l), categorySlug: l.category.slug }));

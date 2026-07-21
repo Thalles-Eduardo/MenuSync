@@ -26,6 +26,7 @@ export default async function SiteHome() {
         name: produto.name,
         price: produto.price,
         unitPrice: produto.unitPrice,
+        weight: produto.weight,
       },
     ];
   });

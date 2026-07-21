@@ -86,6 +86,12 @@ model Product {
   // Esgotar sem apagar: OrderItems vai apontar para o produto.
   available Boolean @default(true)
 
+  // Ordem de exibicao dentro da categoria. Sem ela a listagem caia em ordem
+  // alfabetica por nome, que reordenou todas as abas em relacao ao cardapio
+  // curado que existia em _data/menu.ts. `Category` ganhou `position` pela mesma
+  // razao: ordem e decisao editorial, nao consequencia do nome.
+  position Int @default(0)
+
   categoryId String
   // Restrict, nao Cascade: apagar categoria nao pode evaporar produto que ja
   // aparece em pedido.
