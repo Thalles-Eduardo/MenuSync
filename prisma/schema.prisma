@@ -41,3 +41,55 @@ model Coupon {
 
   @@map("coupons")
 }
+
+model Category {
+  id       String @id @default(cuid())
+  slug     String @unique
+  label    String
+  position Int
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("categories")
+}
+
+model Product {
+  id String @id @default(cuid())
+
+  // O slug e o id humano de hoje ("sushi-10"). Ele NAO e decorativo: e o valor
+  // que ja esta gravado no localStorage dos carrinhos em uso. parseItems
+  // (CartProvider.tsx:68) so valida `typeof id === "string"`, entao um item
+  // antigo passa no parse e so quebraria depois, ao ser casado com o banco.
+  slug String @unique
+
+  name        String
+  description String
+  weight      String
+
+  // Decimal, nao Float. `100 * (1 - 90/100)` em float da 9.999999999999998.
+  // Hoje brl.format mascara; em Payments nao mascararia. As colunas monetarias
+  // de Orders/OrderItems/Payments herdam esta decisao.
+  price Decimal @db.Decimal(10, 2)
+
+  // Percentual inteiro 0..100. Nulo = sem desconto.
+  discount Int?
+
+  image String
+
+  // Esgotar sem apagar: OrderItems vai apontar para o produto.
+  available Boolean @default(true)
+
+  categoryId String
+  // Restrict, nao Cascade: apagar categoria nao pode evaporar produto que ja
+  // aparece em pedido.
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@map("products")
+}
