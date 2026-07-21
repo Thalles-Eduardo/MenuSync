@@ -72,9 +72,13 @@ model Product {
   // Decimal, nao Float. `100 * (1 - 90/100)` em float da 9.999999999999998.
   // Hoje brl.format mascara; em Payments nao mascararia. As colunas monetarias
   // de Orders/OrderItems/Payments herdam esta decisao.
+  // Nao-negatividade e imposta por CHECK no banco (migration
+  // catalogo_check_constraints), nao pelo Prisma DSL.
   price Decimal @db.Decimal(10, 2)
 
   // Percentual inteiro 0..100. Nulo = sem desconto.
+  // A faixa 0..100 e imposta por CHECK no banco (migration
+  // catalogo_check_constraints), nao pelo Prisma DSL.
   discount Int?
 
   image String
