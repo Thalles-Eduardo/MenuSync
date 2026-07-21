@@ -1,6 +1,7 @@
 import type { Dish } from "./dishes";
 import { menu, type MenuItem } from "./menu";
 import { precoFinal } from "../_lib/price";
+import type { ProdutoDTO } from "@/lib/catalogo/queries";
 
 export type CartItem = {
   id: string;
@@ -23,6 +24,19 @@ export function deMenuItem(item: MenuItem): CartInput {
     weight: item.weight,
     precoOriginal: item.price,
     unitPrice: precoFinal(item),
+  };
+}
+
+export function deProduto(p: ProdutoDTO): CartInput {
+  return {
+    // O id da linha do carrinho continua sendo o slug — e o que ja esta
+    // gravado no localStorage de quem tem carrinho aberto.
+    id: p.slug,
+    name: p.name,
+    image: p.image,
+    weight: p.weight,
+    precoOriginal: p.price,
+    unitPrice: p.unitPrice,
   };
 }
 

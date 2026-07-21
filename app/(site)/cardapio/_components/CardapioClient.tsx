@@ -3,12 +3,17 @@
 import { useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { CATEGORIES, menu, type MenuCategory } from "../../_data/menu";
+import type { CategoriaDTO, ProdutoDTO } from "@/lib/catalogo/queries";
 import SakuraCorners from "../../_components/SakuraCorners";
 import Navbar from "../../_components/Navbar";
 import MenuItemCard from "./MenuItemCard";
 
-export default function CardapioClient() {
+type Props = {
+  categorias: CategoriaDTO[];
+  produtos: (ProdutoDTO & { categorySlug: string })[];
+};
+
+export default function CardapioClient({ categorias, produtos }: Props) {
   const scope = useRef<HTMLDivElement>(null);
   const reduce = useMemo(
     () =>
@@ -16,11 +21,13 @@ export default function CardapioClient() {
       window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     [],
   );
-  const [active, setActive] = useState<MenuCategory>("sushi");
+  // A aba inicial vem da primeira categoria por `position`, nao de "sushi"
+  // hardcoded: as categorias agora sao editaveis no banco.
+  const [active, setActive] = useState(categorias[0]?.slug ?? "");
 
   const items = useMemo(
-    () => menu.filter((m) => m.category === active),
-    [active],
+    () => produtos.filter((p) => p.categorySlug === active),
+    [produtos, active],
   );
 
   useGSAP(
@@ -72,13 +79,13 @@ export default function CardapioClient() {
           {/* Rail de categorias (vertical em lg, horizontal com scroll em telas menores) */}
           <nav aria-label="Categorias" className="lg:w-48 lg:shrink-0">
             <ul className="flex gap-4 overflow-x-auto pb-2 lg:flex-col lg:gap-3 lg:overflow-visible lg:pb-0">
-              {CATEGORIES.map((c) => {
-                const isActive = c.id === active;
+              {categorias.map((c) => {
+                const isActive = c.slug === active;
                 return (
-                  <li key={c.id} className="shrink-0">
+                  <li key={c.slug} className="shrink-0">
                     <button
                       type="button"
-                      onClick={() => setActive(c.id)}
+                      onClick={() => setActive(c.slug)}
                       aria-current={isActive ? "true" : undefined}
                       className={`relative cursor-pointer whitespace-nowrap pb-2 text-base transition-colors duration-300
                         after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-full
@@ -102,7 +109,7 @@ export default function CardapioClient() {
           <div className="flex-1">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
               {items.map((item) => (
-                <MenuItemCard key={item.id} item={item} />
+                <MenuItemCard key={item.slug} item={item} />
               ))}
             </div>
           </div>

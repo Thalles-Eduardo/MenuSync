@@ -1,12 +1,12 @@
 import Image from "next/image";
-import type { MenuItem } from "../../_data/menu";
+import type { ProdutoDTO } from "@/lib/catalogo/queries";
 import AddToCartButton from "../../_components/AddToCartButton";
-import { brl, precoFinal, temDesconto } from "../../_lib/price";
-import { deMenuItem } from "../../_data/cart";
+import { brl } from "../../_lib/price";
+import { deProduto } from "../../_data/cart";
 
-export default function MenuItemCard({ item }: { item: MenuItem }) {
-  const hasDiscount = temDesconto(item);
-  const finalPrice = precoFinal(item);
+export default function MenuItemCard({ item }: { item: ProdutoDTO }) {
+  // Sem precoFinal() aqui: o unitPrice ja veio calculado do servidor.
+  const hasDiscount = item.discount !== null && item.discount > 0;
 
   return (
     <article className="menu-card group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-sm transition hover:bg-white/[0.07]">
@@ -45,9 +45,9 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
               {brl.format(item.price)}
             </span>
           )}
-          <span className="text-lg font-medium">{brl.format(finalPrice)}</span>
+          <span className="text-lg font-medium">{brl.format(item.unitPrice)}</span>
         </span>
-        <AddToCartButton compact item={deMenuItem(item)} />
+        <AddToCartButton compact item={deProduto(item)} />
       </div>
     </article>
   );
