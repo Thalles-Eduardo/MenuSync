@@ -5,8 +5,16 @@ import { PrismaPg } from "@prisma/adapter-pg";
 // O seed roda fora do Next, entao nao passa por lib/prisma.ts (que existe para
 // resolver o problema de hot-reload do dev server). Client proprio, fechado no
 // fim.
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  // Sem isto o erro sai la de dentro do driver pg, sem dizer o que faltou.
+  // Nao usamos getEnv() de proposito: ele exige RESEND_API_KEY e
+  // COUPON_FROM_EMAIL, que o seed nao tem por que precisar.
+  throw new Error("DATABASE_URL nao definida — o seed precisa dela no .env");
+}
+
 const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
+  adapter: new PrismaPg({ connectionString: DATABASE_URL }),
 });
 
 const CATEGORIAS = [
@@ -16,12 +24,24 @@ const CATEGORIAS = [
   { slug: "quentes", label: "Pratos Quentes", position: 4 },
   { slug: "sobremesas", label: "Sobremesas", position: 5 },
   { slug: "bebidas", label: "Bebidas", position: 6 },
-];
+] as const;
 
-// `price` e STRING, nao number. Passar float para uma coluna Decimal
-// reintroduziria pela porta dos fundos exatamente o erro que a coluna existe
-// para evitar.
-const PRODUTOS = [
+type CategoriaSlug = (typeof CATEGORIAS)[number]["slug"];
+
+type SeedProduto = {
+  slug: string;
+  name: string;
+  description: string;
+  weight: string;
+  // String, nunca number: a coluna e Decimal(10,2) e um float aqui
+  // reintroduziria o erro de precisao que ela existe para evitar.
+  price: string;
+  category: CategoriaSlug;
+  image: string;
+  discount: number | null;
+};
+
+const PRODUTOS: SeedProduto[] = [
   { slug: "sushi-10", name: "Sushi 10 P/c", description: "Seleção do sushiman com salmão, atum e camarão sobre arroz shari.", weight: "10 un.", price: "89.90", category: "sushi", image: "/plate4.png", discount: null },
   { slug: "niguiri-salmao", name: "Niguiri de Salmão", description: "Fatia de salmão fresco sobre bolinho de arroz temperado.", weight: "6 un.", price: "42.90", category: "sushi", image: "/plate1.webp", discount: null },
   { slug: "sashimi-misto", name: "Sashimi Misto", description: "Cortes de salmão, atum e peixe branco selecionados do dia.", weight: "12 un.", price: "78.90", category: "sushi", image: "/food4.webp", discount: 15 },
@@ -61,7 +81,7 @@ async function main() {
     const salva = await prisma.category.upsert({
       where: { slug: c.slug },
       update: { label: c.label, position: c.position },
-      create: c,
+      create: { ...c },
     });
     idPorSlug.set(c.slug, salva.id);
   }
@@ -99,6 +119,9 @@ async function main() {
 main()
   .catch((e) => {
     console.error(e);
-    process.exit(1);
+    // exitCode em vez de exit(1): process.exit mata o processo antes do
+    // .finally() abaixo rodar, entao o disconnect nunca acontecia no caminho
+    // de erro — apesar de o codigo parecer que sim.
+    process.exitCode = 1;
   })
   .finally(() => prisma.$disconnect());
