@@ -15,13 +15,24 @@ export default function Loader() {
 
   useGSAP(
     () => {
-      // Sem movimento: revela a home imediatamente.
-      if (reduce) {
+      // Intro toca uma única vez por sessão. Em navegações client-side (ex.:
+      // voltar de /cardapio) ou com reduced-motion, revela a home na hora —
+      // sem re-disparar a abertura, preservando a transição de página.
+      const alreadyShown =
+        typeof window !== "undefined" &&
+        window.sessionStorage.getItem("loaderShown") === "1";
+
+      if (reduce || alreadyShown) {
         setDone(true);
         return;
       }
 
-      const tl = gsap.timeline({ onComplete: () => setDone(true) });
+      const tl = gsap.timeline({
+        onComplete: () => {
+          window.sessionStorage.setItem("loaderShown", "1");
+          setDone(true);
+        },
+      });
       // Título surge pequeno e cresce até o tamanho normal...
       tl.fromTo(
         ".loader-word",

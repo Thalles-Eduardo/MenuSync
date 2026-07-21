@@ -5,7 +5,6 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import type { Dish } from "../_data/dishes";
 import AtmosphereLayer from "./AtmosphereLayer";
-import Navbar from "./Navbar";
 import HeroText from "./HeroText";
 import DishPlate from "./DishPlate";
 import DishCarousel from "./DishCarousel";
@@ -161,9 +160,7 @@ export default function HeroShowcase({
     >
       <AtmosphereLayer />
 
-      <Navbar />
-
-      <div className="relative z-10 grid grid-cols-1 items-center gap-8 px-8 pt-4 pb-40 md:px-12 lg:grid-cols-[1fr_1.1fr_1fr]">
+      <div className="relative z-10 grid grid-cols-1 items-center gap-8 px-8 pt-28 pb-40 md:px-12 lg:grid-cols-[1fr_1.1fr_1fr]">
         <HeroText dish={activeDish} />
 
         <DishPlate dish={activeDish} />

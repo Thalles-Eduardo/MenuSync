@@ -1,14 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import TransitionLink from "./TransitionLink";
 import type { Dish } from "../_data/dishes";
 import AddToCartButton from "./AddToCartButton";
 import SakuraCorners from "./SakuraCorners";
-
-const brl = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-});
+import { brl } from "../_lib/price";
+import { deDish } from "../_data/cart";
 
 function DishCard({ dish }: { dish: Dish }) {
   return (
@@ -35,7 +33,7 @@ function DishCard({ dish }: { dish: Dish }) {
         >
           {brl.format(dish.price)}
         </span>
-        <AddToCartButton />
+        <AddToCartButton item={deDish(dish)} />
       </div>
     </article>
   );
@@ -103,7 +101,7 @@ export default function MenuBento({
               >
                 {brl.format(activeDish.price)}
               </span>
-              <AddToCartButton />
+              <AddToCartButton item={deDish(activeDish)} />
             </div>
           </div>
         </article>
@@ -114,8 +112,8 @@ export default function MenuBento({
         ))}
 
         {/* Card CTA */}
-        <a
-          href="#"
+        <TransitionLink
+          href="/cardapio"
           className="bento-cta group flex flex-col justify-between gap-6 rounded-2xl border border-yellow/30 bg-gradient-to-br from-salmon/20 to-transparent p-6 transition hover:border-yellow/60"
         >
           <div className="flex flex-col gap-1">
@@ -140,7 +138,7 @@ export default function MenuBento({
             </svg>
             Explore
           </button>
-        </a>
+        </TransitionLink>
       </div>
     </section>
   );

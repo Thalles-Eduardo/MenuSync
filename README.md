@@ -13,7 +13,7 @@ Desenvolver o site de um restaurante japonês com uma home moderna e interativa,
 
 ## Front-end
 
-- Next.js 15
+- Next.js 16
 - React 19
 - TypeScript
 - Tailwind CSS
@@ -28,11 +28,87 @@ Desenvolver o site de um restaurante japonês com uma home moderna e interativa,
 - Next.js Route Handlers
 - Prisma ORM
 - PostgreSQL
+- Resend (e-mail transacional)
 
 ## Infraestrutura
 
 - Docker
 - Docker Compose
+
+---
+
+# ▶️ Como rodar
+
+## Pré-requisitos
+
+- **Node 20+**
+- **Docker** (com Docker Compose) — sobe o Postgres
+
+## 1. Variáveis de ambiente
+
+```bash
+cp .env.example .env
+```
+
+O que preencher no `.env`:
+
+| Variável | O que é |
+|---|---|
+| `DATABASE_URL` | Já vem pronta para o Postgres do `docker-compose.yml`. Só mude a porta se você tiver mudado `POSTGRES_PORT`. |
+| `RESEND_API_KEY` | **Precisa ser preenchida.** Pegue no painel da [Resend](https://resend.com) em _API Keys_. |
+| `COUPON_FROM_EMAIL` | Remetente. O padrão `onboarding@resend.dev` funciona sem verificar domínio — veja a nota de sandbox abaixo. |
+| `COUPON_FROM_NAME` | Nome de exibição do remetente. |
+
+**Sem `RESEND_API_KEY` o app inteiro continua funcionando** — home, cardápio,
+carrinho, banco. O que quebra é apenas o envio do cupom: `POST /api/coupons`
+grava a linha e responde `502 SEND_FAILED` na hora de chamar o provedor.
+
+## 2. Banco
+
+```bash
+docker compose up -d
+```
+
+Sobe o `postgres:17-alpine` com volume nomeado e healthcheck. A porta do **host**
+é `5432` por padrão; se ela já estiver ocupada por outro Postgres na sua máquina,
+defina `POSTGRES_PORT` no `.env` (ex.: `POSTGRES_PORT=5434`) **e reflita a mesma
+porta na `DATABASE_URL`** — o compose lê essa variável, mas a URL não é derivada
+dela automaticamente.
+
+## 3. Dependências e migrations
+
+```bash
+npm install
+npx prisma migrate dev
+```
+
+O `npm install` já roda `prisma generate` no `postinstall`. O `migrate dev` cria
+o schema e aplica as migrations de `prisma/migrations/`.
+
+## 4. Subir a aplicação
+
+```bash
+npm run dev
+```
+
+Disponível em `http://localhost:3000`.
+
+## 5. Testes
+
+```bash
+npm test          # roda uma vez
+npm run test:watch
+```
+
+Os testes de integração do cupom batem no **Postgres real**, então exigem o
+container do passo 2 no ar e o `.env` com `DATABASE_URL` válida. Eles rodam em
+série e limpam apenas as linhas do próprio domínio de teste (`@vitest.local`),
+sem tocar nos demais dados. O envio de e-mail é sempre substituído por um stub —
+nenhum teste chama a Resend.
+
+> **Nota — modo sandbox da Resend.** O remetente padrão só entrega para o e-mail
+> dono da conta; qualquer outro destinatário volta como erro. Os detalhes e como
+> sair disso estão na nota da seção **Cupom por e-mail** (Fase 03).
 
 ---
 
@@ -143,8 +219,13 @@ Construir a base visual do projeto no Figma.
 - [x] Pratos em destaque
 - [x] Sobre o restaurante (About)
 - [x] Reservas (CTA)
-- [ ] Cupom por e-mail
-- [ ] Footer/Contato
+- [x] Cupom por e-mail
+- [x] Footer
+
+## Página separada
+
+- [x] Cardápio
+- [x] Carrinho
 
 ## Cupom por e-mail
 
@@ -155,14 +236,25 @@ Fluxo:
 1. Campo de e-mail na home, com validação (Zod: formato válido e obrigatório).
 2. Submit chama uma Route Handler (`POST /api/coupons`).
 3. O backend valida o e-mail, gera/associa um código de cupom (registro em `Coupons`) e o vincula ao e-mail.
-4. Envio do e-mail transacional com o cupom (ex.: Resend / Nodemailer).
+4. Envio do e-mail transacional com o cupom (Resend).
 5. Feedback na UI: sucesso, e-mail já cadastrado ou erro.
 
 Regras:
 
-- [ ] Um cupom por e-mail (evitar duplicidade)
-- [ ] Rate limit anti-abuso no endpoint
-- [ ] Cupom com código, validade e status (ativo / usado / expirado)
+- [x] Um cupom por e-mail (evitar duplicidade)
+- [x] Rate limit anti-abuso no endpoint
+- [x] Cupom com código, validade e status (ativo / usado / expirado)
+
+> **Nota — modo sandbox.** O envio usa o remetente `onboarding@resend.dev`, que
+> dispensa verificar um domínio, mas a Resend **só entrega para o e-mail dono da
+> conta**. Qualquer outro destinatário é recusado e a API responde `502` — com o
+> cupom **já gravado**, porque a persistência acontece antes do envio. Para
+> entregar a endereços quaisquer, verifique um domínio no painel da Resend e
+> troque `COUPON_FROM_EMAIL` no `.env`; nenhum código muda.
+>
+> O status `USED` ainda não é escrito por ninguém: o resgate no checkout é da
+> Fase 07. Também não há job que vire `ACTIVE` em `EXPIRED` — hoje só o campo
+> `expiresAt` é gravado.
 
 ---
 
@@ -173,13 +265,13 @@ Regras:
 - [ ] Users
 - [ ] Employees
 - [ ] Customers
-- [ ] Categories
-- [ ] Products
+- [x] Categories
+- [x] Products
 - [ ] Reservations
 - [ ] Orders
 - [ ] OrderItems
 - [ ] Payments
-- [ ] Coupons (código, e-mail, validade, status — ver "Cupom por e-mail" na Fase 03)
+- [x] Coupons (código, e-mail, validade, status — ver "Cupom por e-mail" na Fase 03)
 
 ---
 

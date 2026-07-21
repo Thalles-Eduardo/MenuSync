@@ -1,7 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import { useCart } from "./CartProvider";
+import type { CartInput } from "../_data/cart";
 
 function CartIcon({ className }: { className?: string }) {
   return (
@@ -40,13 +42,31 @@ function CheckIcon({ className }: { className?: string }) {
   );
 }
 
-export default function AddToCartButton() {
+export default function AddToCartButton({
+  item,
+  compact = false,
+}: {
+  item: CartInput;
+  compact?: boolean;
+}) {
   const btnRef = useRef<HTMLButtonElement>(null);
   const busy = useRef(false);
+  const { add } = useCart();
+  const reset = useRef<gsap.core.Tween | null>(null);
+
+  // Sem isso, adicionar um item e navegar para o carrinho antes de 1,2s deixa o
+  // delayedCall abaixo disparar sobre um botão já desmontado.
+  useEffect(() => {
+    return () => {
+      reset.current?.kill();
+    };
+  }, []);
 
   const handleClick = () => {
     if (busy.current || !btnRef.current) return;
     busy.current = true;
+
+    add(item);
 
     const q = gsap.utils.selector(btnRef);
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -54,7 +74,7 @@ export default function AddToCartButton() {
     if (reduce) {
       gsap.set(q(".atc-idle"), { autoAlpha: 0 });
       gsap.set(q(".atc-done"), { autoAlpha: 1 });
-      gsap.delayedCall(1.2, () => {
+      reset.current = gsap.delayedCall(1.2, () => {
         gsap.set(q(".atc-done"), { autoAlpha: 0 });
         gsap.set(q(".atc-idle"), { autoAlpha: 1 });
         busy.current = false;
@@ -103,7 +123,9 @@ export default function AddToCartButton() {
       ref={btnRef}
       type="button"
       onClick={handleClick}
-      className="relative cursor-pointer inline-flex h-[52px] min-w-[170px] items-center justify-center overflow-hidden rounded-md bg-salmon px-5 font-semibold text-white transition hover:brightness-110"
+      className={`relative inline-flex cursor-pointer items-center justify-center overflow-hidden rounded-md bg-salmon font-semibold text-white transition hover:brightness-110 ${
+        compact ? "h-11 min-w-[132px] px-4 text-sm" : "h-[52px] min-w-[170px] px-5"
+      }`}
     >
       <span className="atc-idle inline-flex items-center gap-2">
         <CartIcon className="h-7 w-7" />

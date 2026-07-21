@@ -4,24 +4,34 @@ export type Review = {
   text: string;
 };
 
-export type Dish = {
-  id: string;
-  name: string;
+/** O que e editorial da home e nao existe no catalogo. */
+export type DishEditorial = {
+  slug: string;
   tagline: string;
-  price: number;
   plate: string; // imagem central (alta)
   thumb: string; // miniatura do carrossel
-  video?: string; // vídeo de preparo (abre no "Play no vídeo")
+  video?: string; // video de preparo
   reviews: Review[];
   ingredients: string[];
 };
 
-export const dishes: Dish[] = [
+/**
+ * O que os componentes da home consomem: editorial + os campos que vem do
+ * banco. `name` e `price` NAO sao mais escritos a mao aqui — eram copias dos
+ * mesmos pratos em menu.ts e podiam divergir do que o carrinho cobrava.
+ */
+export type Dish = DishEditorial & {
+  id: string; // = slug; SectionStage usa como chave e como activeDishId
+  name: string;
+  price: number; // preco de tabela
+  unitPrice: number; // ja com desconto
+  weight: string;
+};
+
+export const dishesEditorial: DishEditorial[] = [
   {
-    id: "teishoku",
-    name: "Teishoku Japonês",
+    slug: "teishoku",
     tagline: "#1 Melhor prato da casa!",
-    price: 149.99,
     plate: "/plate1.webp",
     thumb: "/food1.webp",
     video: "/video/preparation1.mp4",
@@ -34,10 +44,8 @@ export const dishes: Dish[] = [
     ingredients: ["Salmão", "Arroz japonês", "Frango teriyaki", "Tempurá de camarão", "Sunomono", "Shoyu"],
   },
   {
-    id: "sopa-misso",
-    name: "Sopa de Missô",
+    slug: "sopa-misso",
     tagline: "Reconforto em cada colher",
-    price: 24.9,
     plate: "/plate3.png",
     thumb: "/food3.webp",
     reviews: [
@@ -49,10 +57,8 @@ export const dishes: Dish[] = [
     ingredients: ["Pasta de missô", "Tofu", "Alga wakame", "Cebolinha", "Dashi"],
   },
   {
-    id: "sushi-10",
-    name: "Sushi 10 P/c",
+    slug: "sushi-10",
     tagline: "Seleção do sushiman",
-    price: 89.9,
     plate: "/plate4.png",
     thumb: "/food4.webp",
     reviews: [
@@ -64,10 +70,8 @@ export const dishes: Dish[] = [
     ingredients: ["Salmão", "Atum", "Camarão", "Arroz shari", "Nori", "Gengibre", "Wasabi"],
   },
   {
-    id: "okonomiyaki",
-    name: "Okonomiyaki",
+    slug: "okonomiyaki",
     tagline: "A pizza japonesa da casa",
-    price: 54.9,
     plate: "/plate2.png",
     thumb: "/food2.webp",
     reviews: [

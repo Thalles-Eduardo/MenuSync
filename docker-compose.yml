@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: menusync-db
+    restart: unless-stopped
+    environment:
+      # Defaults de desenvolvimento explicitos: o compose sobe sem .env nenhum.
+      # Em producao as credenciais vem do ambiente e nunca destes defaults.
+      POSTGRES_USER: ${POSTGRES_USER:-menusync}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-menusync}
+      POSTGRES_DB: ${POSTGRES_DB:-menusync}
+    ports:
+      # 5432 e o default. A porta do HOST e configuravel porque outro Postgres
+      # (deste ou de outro projeto) pode ja estar ocupando a 5432 na maquina;
+      # quem precisar so define POSTGRES_PORT no .env. A porta interna nao muda.
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # Volume nomeado: derrubar o container nao pode apagar o banco de dev.
+      - menusync-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # O Postgres aceita conexao antes de estar pronto para consultas; o
+      # pg_isready e o que deixa o `docker compose ps` refletir a verdade e
+      # evita rodar migration contra um banco que ainda esta inicializando.
+      test:
+        ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-menusync} -d ${POSTGRES_DB:-menusync}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  menusync-pgdata:

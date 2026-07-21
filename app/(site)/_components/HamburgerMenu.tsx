@@ -1,12 +1,20 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import TransitionLink from "./TransitionLink";
 
-type Item = { label: string; icon: ReactNode };
+type Item = {
+  label: string;
+  icon: ReactNode;
+  href: string; // rota (itens de rota fixa e fallback fora da home)
+  index?: number; // índice na roleta (itens de seção da home)
+};
 
 const items: Item[] = [
   {
     label: "Início",
+    href: "/",
+    index: 0,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M3 11 12 3l9 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -16,6 +24,7 @@ const items: Item[] = [
   },
   {
     label: "Cardápio",
+    href: "/cardapio",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
@@ -24,7 +33,20 @@ const items: Item[] = [
     ),
   },
   {
+    label: "Carrinho",
+    href: "/carrinho",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M3 4h2l2.4 10.2a1 1 0 0 0 1 .8h7.4a1 1 0 0 0 1-.8L19 7H6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="9" cy="19" r="1.5" stroke="currentColor" strokeWidth="1.8" />
+        <circle cx="16" cy="19" r="1.5" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    ),
+  },
+  {
     label: "Reservas",
+    href: "/?section=reservas",
+    index: 3,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M4 6h16v15H4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
@@ -34,6 +56,8 @@ const items: Item[] = [
   },
   {
     label: "Sobre",
+    href: "/?section=sobre",
+    index: 2,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
@@ -43,6 +67,8 @@ const items: Item[] = [
   },
   {
     label: "Contato",
+    href: "/?section=contato",
+    index: 4,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M3 6h18v12H3z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
@@ -52,7 +78,11 @@ const items: Item[] = [
   },
 ];
 
-export default function HamburgerMenu() {
+export default function HamburgerMenu({
+  onSelectSection,
+}: {
+  onSelectSection?: (index: number) => void;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -80,12 +110,33 @@ export default function HamburgerMenu() {
       {open && (
         <div className="panel">
           <div className="list">
-            {items.map((it) => (
-              <button key={it.label} type="button" className="item" onClick={() => setOpen(false)}>
-                {it.icon}
-                {it.label}
-              </button>
-            ))}
+            {items.map((it) => {
+              // Item de seção na home (tem index + handler): navega pela roleta.
+              // Caso contrário (Cardápio, ou qualquer item fora da home): usa rota.
+              const asSectionButton = it.index !== undefined && onSelectSection;
+              if (asSectionButton) {
+                return (
+                  <button
+                    key={it.label}
+                    type="button"
+                    className="item"
+                    onClick={() => {
+                      onSelectSection(it.index!);
+                      setOpen(false);
+                    }}
+                  >
+                    {it.icon}
+                    {it.label}
+                  </button>
+                );
+              }
+              return (
+                <TransitionLink key={it.label} href={it.href} className="item" onClick={() => setOpen(false)}>
+                  {it.icon}
+                  {it.label}
+                </TransitionLink>
+              );
+            })}
           </div>
         </div>
       )}
@@ -97,7 +148,6 @@ export default function HamburgerMenu() {
           line-height: 0;
         }
 
-        
         .hamburger {
           cursor: pointer;
           display: inline-flex;
@@ -170,7 +220,7 @@ export default function HamburgerMenu() {
           padding: 10px;
           overflow: hidden;
         }
-        .item {
+        .list :global(.item) {
           font-size: 15px;
           background: transparent;
           border: 2px solid transparent;
@@ -185,19 +235,20 @@ export default function HamburgerMenu() {
           transition: 320ms;
           box-sizing: border-box;
           text-align: left;
+          text-decoration: none;
         }
-        .item:hover,
-        .item:focus {
+        .list :global(.item):hover,
+        .list :global(.item):focus {
           border: 2px solid rgba(255, 255, 255, 0.12);
           color: #e7c9c9;
         }
-        .item:focus,
-        .item:active {
+        .list :global(.item):focus,
+        .list :global(.item):active {
           background: rgba(255, 255, 255, 0.06);
           outline: none;
           margin-left: 14px;
         }
-        .item::before {
+        .list :global(.item)::before {
           content: "";
           position: absolute;
           top: 5px;
@@ -209,18 +260,18 @@ export default function HamburgerMenu() {
           opacity: 0;
           transition: 320ms;
         }
-        .item:focus::before,
-        .item:active::before {
+        .list :global(.item):focus::before,
+        .list :global(.item):active::before {
           opacity: 1;
         }
-        .item :global(svg) {
+        .list :global(svg) {
           width: 20px;
           height: 20px;
           flex: none;
         }
 
         /* Efeito "fuzzy": desfoca os outros itens ao passar o mouse em um */
-        .list:hover > :not(.item:hover) {
+        .list:hover > :global(.item:not(:hover)) {
           transition: 300ms;
           filter: blur(1.4px);
           transform: scale(0.96);

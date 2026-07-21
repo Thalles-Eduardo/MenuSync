@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// A URL de conexao fica em prisma.config.ts — no Prisma 7 a propriedade `url`
+// nao e mais aceita aqui.
+datasource db {
+  provider = "postgresql"
+}
+
+enum CouponStatus {
+  ACTIVE
+  USED
+  EXPIRED
+}
+
+model Coupon {
+  id String @id @default(cuid())
+
+  // @unique no email e a UNICA garantia do "um cupom por e-mail". Checar com
+  // findFirst antes do create teria janela de corrida: duas requisicoes
+  // simultaneas passariam pelas duas checagens. A constraint do banco nao tem
+  // essa janela — o codigo captura o P2002 e devolve o cupom que ja existe.
+  email String @unique
+
+  code   String       @unique
+  status CouponStatus @default(ACTIVE)
+
+  // O desconto e uma COLUNA, nao algo inferido do prefixo "SAKURA10-". Se o
+  // frontend tivesse que extrair "10" da string, a regra de negocio moraria no
+  // cliente — e uma campanha de 20% viraria deploy em vez de INSERT. O valor
+  // desta coluna e a unica fonte de verdade do percentual; o cliente nunca o
+  // persiste (ver a spec do resgate).
+  percent Int @default(10)
+
+  // Cobre a "validade" do README; gravado como criacao + 30 dias.
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("coupons")
+}
+
+model Category {
+  id       String @id @default(cuid())
+  slug     String @unique
+  label    String
+  position Int
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("categories")
+}
+
+model Product {
+  id String @id @default(cuid())
+
+  // O slug e o id humano de hoje ("sushi-10"). Ele NAO e decorativo: e o valor
+  // que ja esta gravado no localStorage dos carrinhos em uso. parseItems
+  // (CartProvider.tsx:68) so valida `typeof id === "string"`, entao um item
+  // antigo passa no parse e so quebraria depois, ao ser casado com o banco.
+  slug String @unique
+
+  name        String
+  description String
+  weight      String
+
+  // Decimal, nao Float. `100 * (1 - 90/100)` em float da 9.999999999999998.
+  // Hoje brl.format mascara; em Payments nao mascararia. As colunas monetarias
+  // de Orders/OrderItems/Payments herdam esta decisao.
+  // Nao-negatividade e imposta por CHECK no banco (migration
+  // catalogo_check_constraints), nao pelo Prisma DSL.
+  price Decimal @db.Decimal(10, 2)
+
+  // Percentual inteiro 0..100. Nulo = sem desconto.
+  // A faixa 0..100 e imposta por CHECK no banco (migration
+  // catalogo_check_constraints), nao pelo Prisma DSL.
+  discount Int?
+
+  image String
+
+  // Esgotar sem apagar: OrderItems vai apontar para o produto.
+  available Boolean @default(true)
+
+  // Ordem de exibicao dentro da categoria. Sem ela a listagem caia em ordem
+  // alfabetica por nome, que reordenou todas as abas em relacao ao cardapio
+  // curado que existia em _data/menu.ts. `Category` ganhou `position` pela mesma
+  // razao: ordem e decisao editorial, nao consequencia do nome.
+  position Int @default(0)
+
+  categoryId String
+  // Restrict, nao Cascade: apagar categoria nao pode evaporar produto que ja
+  // aparece em pedido.
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@map("products")
+}

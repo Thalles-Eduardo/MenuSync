@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef } from "react";
-import Link from "next/link";
+import TransitionLink from "./TransitionLink";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { PLACE } from "./about/about-data";
@@ -124,12 +124,12 @@ export default function ReservasCTA({ active = false }: { active?: boolean }) {
             ou no salão e viva o ritual da cozinha japonesa.
           </p>
           <div className="mt-8">
-            <Link
+            <TransitionLink
               href="/reserva"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-yellow px-7 font-semibold text-dark-blue shadow-[5px_5px_18px_rgba(0,0,0,0.18)] transition-all duration-500 hover:bg-caramel active:scale-[0.97]"
             >
               Reservar mesa
-            </Link>
+            </TransitionLink>
           </div>
           <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-dark-blue/75">
             <li className="flex items-center gap-2">

@@ -33,8 +33,15 @@ export default function SakuraCorners({ active }: { active: boolean }) {
 
     // Reduced-motion: nada de reprodução — o poster (plena floração) já mostra
     // o estado final estático.
+    //
+    // O poster é aplicado aqui, e não no JSX: `reduce` é sempre false no
+    // servidor, então `poster={reduce ? ... : undefined}` renderizava diferente
+    // no cliente e quebrava a hidratação com prefers-reduced-motion.
     if (reduce) {
-      vids.forEach((v) => v.pause());
+      vids.forEach((v) => {
+        v.poster = POSTER;
+        v.pause();
+      });
       return;
     }
 
@@ -77,7 +84,6 @@ export default function SakuraCorners({ active }: { active: boolean }) {
         ref={leftRef}
         className={`${common} left-0`}
         src={SRC}
-        poster={reduce ? POSTER : undefined}
         muted
         loop
         playsInline
@@ -88,7 +94,6 @@ export default function SakuraCorners({ active }: { active: boolean }) {
         ref={rightRef}
         className={`${common} right-0 -scale-x-100`}
         src={SRC}
-        poster={reduce ? POSTER : undefined}
         muted
         loop
         playsInline
