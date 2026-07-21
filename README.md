@@ -265,8 +265,8 @@ Regras:
 - [ ] Users
 - [ ] Employees
 - [ ] Customers
-- [ ] Categories
-- [ ] Products
+- [x] Categories
+- [x] Products
 - [ ] Reservations
 - [ ] Orders
 - [ ] OrderItems
