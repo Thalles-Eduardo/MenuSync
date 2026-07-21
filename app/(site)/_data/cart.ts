@@ -1,6 +1,4 @@
 import type { Dish } from "./dishes";
-import { menu, type MenuItem } from "./menu";
-import { precoFinal } from "../_lib/price";
 import type { ProdutoDTO } from "@/lib/catalogo/queries";
 
 export type CartItem = {
@@ -16,17 +14,6 @@ export type CartItem = {
 /** Um produto pronto para entrar no carrinho, ainda sem quantidade. */
 export type CartInput = Omit<CartItem, "quantity">;
 
-export function deMenuItem(item: MenuItem): CartInput {
-  return {
-    id: item.id,
-    name: item.name,
-    image: item.image,
-    weight: item.weight,
-    precoOriginal: item.price,
-    unitPrice: precoFinal(item),
-  };
-}
-
 export function deProduto(p: ProdutoDTO): CartInput {
   return {
     // O id da linha do carrinho continua sendo o slug — e o que ja esta
@@ -41,23 +28,17 @@ export function deProduto(p: ProdutoDTO): CartInput {
 }
 
 /**
- * `Dish` não tem `weight` nem `discount`. Os 4 pratos do hero existem no `menu`
- * com o mesmo id, então herdamos de lá para a linha do carrinho ficar consistente
- * venha de onde vier. Sem correspondência, cai para o preço do próprio Dish.
+ * O `menu.find` que morava aqui existia para o carrinho nao cobrar o preco
+ * desatualizado de dishes.ts. Com Product como fonte unica, dish.price E o
+ * preco do banco — o contorno deixou de ser necessario.
  */
 export function deDish(dish: Dish): CartInput {
-  const equivalente = menu.find((m) => m.id === dish.id);
-
-  if (!equivalente) {
-    return {
-      id: dish.id,
-      name: dish.name,
-      image: dish.thumb,
-      weight: "",
-      precoOriginal: dish.price,
-      unitPrice: dish.price,
-    };
-  }
-
-  return { ...deMenuItem(equivalente), image: dish.thumb };
+  return {
+    id: dish.id,
+    name: dish.name,
+    image: dish.thumb, // a home usa a miniatura, nao a imagem do catalogo
+    weight: "",
+    precoOriginal: dish.price,
+    unitPrice: dish.unitPrice,
+  };
 }
