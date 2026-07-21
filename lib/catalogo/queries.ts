@@ -1,3 +1,6 @@
+// Falha no build se um Client Component importar este modulo. Sem isto o erro
+// apareceria como uma falha opaca de bundling do `pg`.
+import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
@@ -28,6 +31,14 @@ export type CategoriaDTO = {
 
 const CEM = new Prisma.Decimal(100);
 
+/**
+ * ATENCAO para quem for escrever OrderItems/Payments: o valor devolvido aqui e
+ * de EXIBICAO. O arredondamento acontece por unidade, antes de existir
+ * quantidade — e multiplicar o unitario ja arredondado diverge de arredondar o
+ * total da linha uma vez so (39.87 x 3 = 119.61, contra 119.60 arredondando no
+ * fim). O total de uma linha de pedido deve sair de `price` e `discount`, que o
+ * DTO tambem carrega, nao da multiplicacao deste campo.
+ */
 function calcularUnitPrice(
   price: Prisma.Decimal,
   discount: number | null,
@@ -51,15 +62,11 @@ const SELECAO = {
   discount: true,
 } as const;
 
-type LinhaProduto = {
-  slug: string;
-  name: string;
-  description: string;
-  weight: string;
-  image: string;
-  price: Prisma.Decimal;
-  discount: number | null;
-};
+// Derivado de SELECAO, nao escrito a mao: tipagem estrutural deixaria passar
+// em silencio um campo NOVO adicionado ao select (so pega campo removido ou
+// renomeado). Com o tipo derivado, um campo a mais em SELECAO aparece aqui
+// tambem, e o compiler avisa se paraDTO nao o usar.
+type LinhaProduto = Prisma.ProductGetPayload<{ select: typeof SELECAO }>;
 
 function paraDTO(linha: LinhaProduto): ProdutoDTO {
   return {
@@ -105,7 +112,10 @@ export async function buscarProdutosPorSlug(
   if (slugs.length === 0) return [];
 
   const linhas = await prisma.product.findMany({
-    where: { slug: { in: slugs } },
+    // Mesmo filtro de listarProdutos. Sem ele, um prato esgotado sumia do
+    // /cardapio mas continuava no hero da home, com o botao de adicionar ao
+    // carrinho funcionando.
+    where: { slug: { in: slugs }, available: true },
     select: SELECAO,
   });
 

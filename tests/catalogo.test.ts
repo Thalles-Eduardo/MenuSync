@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { listarCategorias, listarProdutos, buscarProdutosPorSlug } from "@/lib/catalogo/queries";
+import { prisma } from "@/lib/prisma";
 
 // Testes de LEITURA sobre os dados do seed. Nao escrevem nada, entao nao
 // precisam de limpeza e nao podem corromper o banco de desenvolvimento.
@@ -18,6 +19,9 @@ describe("catalogo", () => {
 
   it("lista os 22 produtos com preco como number", async () => {
     const produtos = await listarProdutos();
+    // O 22 e fidelidade ao seed, nao regra de negocio: se alguem adicionar um
+    // prato em prisma/seed.ts este teste falha de proposito, para o numero ser
+    // atualizado conscientemente — nao e regressao de queries.ts.
     expect(produtos).toHaveLength(22);
 
     const sushi10 = produtos.find((p) => p.slug === "sushi-10");
@@ -61,5 +65,24 @@ describe("catalogo", () => {
   it("ignora slug inexistente em vez de estourar", async () => {
     const produtos = await buscarProdutosPorSlug(["sushi-10", "nao-existe"]);
     expect(produtos.map((p) => p.slug)).toEqual(["sushi-10"]);
+  });
+
+  // Este e o unico teste do arquivo que ESCREVE. Ele mexe so na coluna
+  // `available` de um produto do seed e restaura no finally, inclusive se a
+  // assercao falhar.
+  it("omite produto indisponivel", async () => {
+    await prisma.product.update({
+      where: { slug: "teishoku" },
+      data: { available: false },
+    });
+    try {
+      const produtos = await buscarProdutosPorSlug(["teishoku", "sushi-10"]);
+      expect(produtos.map((p) => p.slug)).toEqual(["sushi-10"]);
+    } finally {
+      await prisma.product.update({
+        where: { slug: "teishoku" },
+        data: { available: true },
+      });
+    }
   });
 });

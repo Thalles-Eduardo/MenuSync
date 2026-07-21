@@ -1,3 +1,4 @@
+import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -9,6 +10,11 @@ export default defineConfig({
     // do modulo no cache, o stub do mailer seria registrado nela e a rota
     // chamaria a Resend de verdade (ja aconteceu nesta base).
     tsconfigPaths: true,
+    alias: {
+      // `server-only` lanca incondicionalmente fora do bundler do Next. Aqui
+      // vira no-op — ver o comentario em tests/stubs/server-only.ts.
+      "server-only": path.resolve(__dirname, "tests/stubs/server-only.ts"),
+    },
   },
   test: {
     environment: "node",
