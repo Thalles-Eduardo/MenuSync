@@ -86,6 +86,13 @@ model Product {
 
   available Boolean @default(true) // esgotar sem apagar o histórico
 
+  // Ordem de exibição dentro da categoria. Adicionada durante a execução, depois
+  // que a revisão final flagrou que ordenar por `name` reordenava todas as abas
+  // em relação ao cardápio curado do antigo menu.ts — a aba Sushi passou a abrir
+  // em "Combinado Sakura" em vez de "Sushi 10 P/c". Mesmo motivo do `position` de
+  // Category: ordem é decisão editorial, não consequência do nome.
+  position Int @default(0)
+
   categoryId String
   // Restrict, não Cascade: apagar uma categoria não pode evaporar produtos que
   // já aparecem em pedidos. O admin terá que mover os produtos primeiro.
